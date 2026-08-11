@@ -378,7 +378,6 @@ async function fetchMarketCap(code, market) {
     // 返回 null 表示无法准确获取，走跳过逻辑（不过滤市值）
     return null;
 }
-}
 
 // ===== 财报日期获取 =====
 function getMarketSuffix(mkt) {
