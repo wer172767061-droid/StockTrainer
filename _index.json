@@ -1,0 +1,346 @@
+{
+  "COHR": {
+    "name": "Coherent",
+    "days": 2665
+  },
+  "ANET": {
+    "name": "Arista Networks",
+    "days": 2665
+  },
+  "SNPS": {
+    "name": "新思科技",
+    "days": 2665
+  },
+  "TXN": {
+    "name": "德州仪器",
+    "days": 2665
+  },
+  "ASML": {
+    "name": "阿斯麦",
+    "days": 2665
+  },
+  "PANW": {
+    "name": "Palo Alto Networks",
+    "days": 2665
+  },
+  "WDAY": {
+    "name": "Workday",
+    "days": 2665
+  },
+  "AMD": {
+    "name": "美国超微公司",
+    "days": 2665
+  },
+  "NTAP": {
+    "name": "美国网存",
+    "days": 2665
+  },
+  "DDOG": {
+    "name": "Datadog",
+    "days": 1731
+  },
+  "RBLX": {
+    "name": "Roblox",
+    "days": 1361
+  },
+  "FTNT": {
+    "name": "飞塔信息",
+    "days": 2665
+  },
+  "RKLB": {
+    "name": "Rocket Lab",
+    "days": 1432
+  },
+  "GFS": {
+    "name": "GlobalFoundries",
+    "days": 1199
+  },
+  "APP": {
+    "name": "Applovin",
+    "days": 1336
+  },
+  "INTC": {
+    "name": "英特尔",
+    "days": 2665
+  },
+  "CRWD": {
+    "name": "CrowdStrike",
+    "days": 1800
+  },
+  "MCHP": {
+    "name": "微芯科技",
+    "days": 2665
+  },
+  "DASH": {
+    "name": "DoorDash",
+    "days": 1422
+  },
+  "ASTS": {
+    "name": "AST SpaceMobile",
+    "days": 1700
+  },
+  "ENTG": {
+    "name": "英特格",
+    "days": 2665
+  },
+  "CIEN": {
+    "name": "Ciena",
+    "days": 2665
+  },
+  "IBM": {
+    "name": "IBM Corp",
+    "days": 2665
+  },
+  "LITE": {
+    "name": "Lumentum",
+    "days": 2665
+  },
+  "NFLX": {
+    "name": "奈飞",
+    "days": 2665
+  },
+  "MSFT": {
+    "name": "微软",
+    "days": 2665
+  },
+  "F": {
+    "name": "福特汽车",
+    "days": 2665
+  },
+  "UBER": {
+    "name": "优步",
+    "days": 1822
+  },
+  "TSLA": {
+    "name": "特斯拉",
+    "days": 2665
+  },
+  "TSM": {
+    "name": "台积电",
+    "days": 2665
+  },
+  "CSCO": {
+    "name": "思科",
+    "days": 2665
+  },
+  "AAPL": {
+    "name": "苹果",
+    "days": 2665
+  },
+  "MRVL": {
+    "name": "迈威尔科技",
+    "days": 2665
+  },
+  "ABNB": {
+    "name": "爱彼迎",
+    "days": 1421
+  },
+  "PLTR": {
+    "name": "Palantir",
+    "days": 1471
+  },
+  "AMZN": {
+    "name": "亚马逊",
+    "days": 2665
+  },
+  "MU": {
+    "name": "美光科技",
+    "days": 2665
+  },
+  "MPWR": {
+    "name": "Monolithic Power Systems",
+    "days": 2665
+  },
+  "ACN": {
+    "name": "埃森哲",
+    "days": 2665
+  },
+  "SHOP": {
+    "name": "Shopify",
+    "days": 2665
+  },
+  "ADP": {
+    "name": "自动数据处理",
+    "days": 2665
+  },
+  "GM": {
+    "name": "通用汽车",
+    "days": 2665
+  },
+  "DELL": {
+    "name": "戴尔科技",
+    "days": 1913
+  },
+  "KLAC": {
+    "name": "科磊",
+    "days": 2665
+  },
+  "TER": {
+    "name": "泰瑞达",
+    "days": 2665
+  },
+  "LRCX": {
+    "name": "泛林集团",
+    "days": 2665
+  },
+  "AMAT": {
+    "name": "应用材料",
+    "days": 2665
+  },
+  "SMCI": {
+    "name": "超微电脑",
+    "days": 2665
+  },
+  "SITM": {
+    "name": "SiTime",
+    "days": 1686
+  },
+  "KEYS": {
+    "name": "Keysight Technologies",
+    "days": 2665
+  },
+  "ADI": {
+    "name": "亚德诺",
+    "days": 2665
+  },
+  "CRM": {
+    "name": "赛富时",
+    "days": 2665
+  },
+  "ZM": {
+    "name": "Zoom通讯",
+    "days": 1837
+  },
+  "FSLR": {
+    "name": "第一太阳能",
+    "days": 2665
+  },
+  "QCOM": {
+    "name": "高通",
+    "days": 2665
+  },
+  "ARM": {
+    "name": "Arm Holdings",
+    "days": 728
+  },
+  "PYPL": {
+    "name": "PayPal",
+    "days": 2665
+  },
+  "OKTA": {
+    "name": "Okta",
+    "days": 2347
+  },
+  "ON": {
+    "name": "安森美半导体",
+    "days": 2665
+  },
+  "SNOW": {
+    "name": "Snowflake",
+    "days": 1481
+  },
+  "ADBE": {
+    "name": "Adobe",
+    "days": 2665
+  },
+  "SAP": {
+    "name": "SAP SE",
+    "days": 2665
+  },
+  "FFIV": {
+    "name": "F5 Inc",
+    "days": 2665
+  },
+  "GOOGL": {
+    "name": "谷歌-A",
+    "days": 2665
+  },
+  "INTU": {
+    "name": "财捷",
+    "days": 2665
+  },
+  "AVGO": {
+    "name": "博通",
+    "days": 2665
+  },
+  "NOW": {
+    "name": "ServiceNow",
+    "days": 2665
+  },
+  "HPE": {
+    "name": "慧与科技",
+    "days": 2665
+  },
+  "STX": {
+    "name": "希捷科技",
+    "days": 2665
+  },
+  "ZS": {
+    "name": "Zscaler",
+    "days": 2111
+  },
+  "TWLO": {
+    "name": "Twilio",
+    "days": 2546
+  },
+  "EBAY": {
+    "name": "eBay",
+    "days": 2665
+  },
+  "CDNS": {
+    "name": "铿腾电子",
+    "days": 2665
+  },
+  "TEAM": {
+    "name": "Atlassian",
+    "days": 2665
+  },
+  "NET": {
+    "name": "Cloudflare",
+    "days": 1735
+  },
+  "WDC": {
+    "name": "西部数据",
+    "days": 2665
+  },
+  "NXPI": {
+    "name": "恩智浦",
+    "days": 2665
+  },
+  "MDB": {
+    "name": "MongoDB",
+    "days": 2212
+  },
+  "ORCL": {
+    "name": "甲骨文",
+    "days": 2665
+  },
+  "NVDA": {
+    "name": "英伟达",
+    "days": 2665
+  },
+  "ROKU": {
+    "name": "Roku Inc",
+    "days": 2227
+  },
+  "COIN": {
+    "name": "Coinbase",
+    "days": 1337
+  },
+  "ALAB": {
+    "name": "Astera Labs",
+    "days": 599
+  },
+  "HPQ": {
+    "name": "惠普",
+    "days": 2665
+  },
+  "META": {
+    "name": "Meta Platforms",
+    "days": 2665
+  },
+  "HOOD": {
+    "name": "Robinhood",
+    "days": 1263
+  }
+}
