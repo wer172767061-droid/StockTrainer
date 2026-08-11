@@ -1,0 +1,566 @@
+{
+  "AAPL": {
+    "name": "苹果",
+    "days": 2665
+  },
+  "ABNB": {
+    "name": "爱彼迎",
+    "days": 1421
+  },
+  "ACHR": {
+    "name": "Archer Aviation",
+    "days": 1415
+  },
+  "ACMR": {
+    "name": "ACM Research",
+    "days": 2201
+  },
+  "ACN": {
+    "name": "埃森哲",
+    "days": 2665
+  },
+  "ADBE": {
+    "name": "Adobe",
+    "days": 2665
+  },
+  "ADI": {
+    "name": "亚德诺",
+    "days": 2665
+  },
+  "ADP": {
+    "name": "自动数据处理",
+    "days": 2665
+  },
+  "AEHR": {
+    "name": "Aehr Test Systems",
+    "days": 2663
+  },
+  "ALAB": {
+    "name": "Astera Labs",
+    "days": 599
+  },
+  "AMAT": {
+    "name": "应用材料",
+    "days": 2665
+  },
+  "AMD": {
+    "name": "美国超微公司",
+    "days": 2665
+  },
+  "AMZN": {
+    "name": "亚马逊",
+    "days": 2665
+  },
+  "ANET": {
+    "name": "Arista Networks",
+    "days": 2665
+  },
+  "APP": {
+    "name": "Applovin",
+    "days": 1336
+  },
+  "ARM": {
+    "name": "Arm Holdings",
+    "days": 728
+  },
+  "ASML": {
+    "name": "阿斯麦",
+    "days": 2665
+  },
+  "ASTS": {
+    "name": "AST SpaceMobile",
+    "days": 1700
+  },
+  "AVGO": {
+    "name": "博通",
+    "days": 2665
+  },
+  "BBAI": {
+    "name": "BigBear.ai Holdings",
+    "days": 1339
+  },
+  "BILL": {
+    "name": "BILL Holdings",
+    "days": 1672
+  },
+  "CAMT": {
+    "name": "康特科技",
+    "days": 2665
+  },
+  "CDNS": {
+    "name": "铿腾电子",
+    "days": 2665
+  },
+  "CDW": {
+    "name": "CDW Corp",
+    "days": 2665
+  },
+  "CHKP": {
+    "name": "Check Point软件",
+    "days": 2665
+  },
+  "CIEN": {
+    "name": "Ciena",
+    "days": 2665
+  },
+  "COHR": {
+    "name": "Coherent",
+    "days": 2665
+  },
+  "COIN": {
+    "name": "Coinbase",
+    "days": 1337
+  },
+  "COMP": {
+    "name": "Compass",
+    "days": 1345
+  },
+  "CRM": {
+    "name": "赛富时",
+    "days": 2665
+  },
+  "CRWD": {
+    "name": "CrowdStrike",
+    "days": 1800
+  },
+  "CSCO": {
+    "name": "思科",
+    "days": 2665
+  },
+  "DASH": {
+    "name": "DoorDash",
+    "days": 1422
+  },
+  "DDOG": {
+    "name": "Datadog",
+    "days": 1731
+  },
+  "DELL": {
+    "name": "戴尔科技",
+    "days": 1913
+  },
+  "DKNG": {
+    "name": "DraftKings",
+    "days": 1581
+  },
+  "DOCN": {
+    "name": "DigitalOcean",
+    "days": 1351
+  },
+  "DOCU": {
+    "name": "DocuSign",
+    "days": 2082
+  },
+  "EBAY": {
+    "name": "eBay",
+    "days": 2665
+  },
+  "ENPH": {
+    "name": "Enphase Energy",
+    "days": 2665
+  },
+  "ENTG": {
+    "name": "英特格",
+    "days": 2665
+  },
+  "ESTC": {
+    "name": "Elastic",
+    "days": 1970
+  },
+  "F": {
+    "name": "福特汽车",
+    "days": 2665
+  },
+  "FFIV": {
+    "name": "F5 Inc",
+    "days": 2665
+  },
+  "FN": {
+    "name": "Fabrinet",
+    "days": 2665
+  },
+  "FORM": {
+    "name": "FormFactor",
+    "days": 2665
+  },
+  "FROG": {
+    "name": "JFrog",
+    "days": 1481
+  },
+  "FSLR": {
+    "name": "第一太阳能",
+    "days": 2665
+  },
+  "FTNT": {
+    "name": "飞塔信息",
+    "days": 2665
+  },
+  "GDDY": {
+    "name": "GoDaddy",
+    "days": 2665
+  },
+  "GEN": {
+    "name": "Gen Digital",
+    "days": 2665
+  },
+  "GFS": {
+    "name": "GlobalFoundries",
+    "days": 1199
+  },
+  "GM": {
+    "name": "通用汽车",
+    "days": 2665
+  },
+  "GOOGL": {
+    "name": "谷歌-A",
+    "days": 2665
+  },
+  "GTLB": {
+    "name": "Gitlab",
+    "days": 1209
+  },
+  "HOOD": {
+    "name": "Robinhood",
+    "days": 1263
+  },
+  "HPE": {
+    "name": "慧与科技",
+    "days": 2665
+  },
+  "HPQ": {
+    "name": "惠普",
+    "days": 2665
+  },
+  "HUBS": {
+    "name": "HubSpot",
+    "days": 2665
+  },
+  "IBM": {
+    "name": "IBM Corp",
+    "days": 2665
+  },
+  "INTC": {
+    "name": "英特尔",
+    "days": 2665
+  },
+  "INTU": {
+    "name": "财捷",
+    "days": 2665
+  },
+  "IONQ": {
+    "name": "IonQ Inc",
+    "days": 1406
+  },
+  "IPGP": {
+    "name": "IPG光电",
+    "days": 2665
+  },
+  "IT": {
+    "name": "加特纳",
+    "days": 2665
+  },
+  "JOBY": {
+    "name": "Joby Aviation",
+    "days": 1443
+  },
+  "KEYS": {
+    "name": "Keysight Technologies",
+    "days": 2665
+  },
+  "KLAC": {
+    "name": "科磊",
+    "days": 2665
+  },
+  "LITE": {
+    "name": "Lumentum",
+    "days": 2665
+  },
+  "LOGI": {
+    "name": "罗技",
+    "days": 2665
+  },
+  "LRCX": {
+    "name": "泛林集团",
+    "days": 2665
+  },
+  "LSCC": {
+    "name": "莱迪思半导体",
+    "days": 2665
+  },
+  "LUMN": {
+    "name": "Lumen Technologies",
+    "days": 2665
+  },
+  "MARA": {
+    "name": "MARA Holdings",
+    "days": 2665
+  },
+  "MCHP": {
+    "name": "微芯科技",
+    "days": 2665
+  },
+  "MDB": {
+    "name": "MongoDB",
+    "days": 2212
+  },
+  "META": {
+    "name": "Meta Platforms",
+    "days": 2665
+  },
+  "MNDY": {
+    "name": "monday.com",
+    "days": 1297
+  },
+  "MPWR": {
+    "name": "Monolithic Power Systems",
+    "days": 2665
+  },
+  "MRVL": {
+    "name": "迈威尔科技",
+    "days": 2665
+  },
+  "MSFT": {
+    "name": "微软",
+    "days": 2665
+  },
+  "MU": {
+    "name": "美光科技",
+    "days": 2665
+  },
+  "NET": {
+    "name": "Cloudflare",
+    "days": 1735
+  },
+  "NFLX": {
+    "name": "奈飞",
+    "days": 2665
+  },
+  "NOW": {
+    "name": "ServiceNow",
+    "days": 2665
+  },
+  "NTAP": {
+    "name": "美国网存",
+    "days": 2665
+  },
+  "NTNX": {
+    "name": "Nutanix",
+    "days": 2477
+  },
+  "NVDA": {
+    "name": "英伟达",
+    "days": 2665
+  },
+  "NXPI": {
+    "name": "恩智浦",
+    "days": 2665
+  },
+  "OKTA": {
+    "name": "Okta",
+    "days": 2347
+  },
+  "OLED": {
+    "name": "Universal Display",
+    "days": 2665
+  },
+  "ON": {
+    "name": "安森美半导体",
+    "days": 2665
+  },
+  "ONTO": {
+    "name": "Onto Innovation",
+    "days": 2665
+  },
+  "OPEN": {
+    "name": "Opendoor Technologies",
+    "days": 1543
+  },
+  "ORCL": {
+    "name": "甲骨文",
+    "days": 2665
+  },
+  "OSIS": {
+    "name": "OSI Systems",
+    "days": 2665
+  },
+  "PANW": {
+    "name": "Palo Alto Networks",
+    "days": 2665
+  },
+  "PATH": {
+    "name": "UiPath",
+    "days": 1332
+  },
+  "PCOR": {
+    "name": "Procore Technologies",
+    "days": 1311
+  },
+  "PD": {
+    "name": "PagerDuty",
+    "days": 1842
+  },
+  "PLTR": {
+    "name": "Palantir",
+    "days": 1471
+  },
+  "POET": {
+    "name": "POET Technologies",
+    "days": 1106
+  },
+  "PRCT": {
+    "name": "PROCEPT BioRobotics",
+    "days": 1230
+  },
+  "PYPL": {
+    "name": "PayPal",
+    "days": 2665
+  },
+  "QCOM": {
+    "name": "高通",
+    "days": 2665
+  },
+  "QRVO": {
+    "name": "Qorvo",
+    "days": 2665
+  },
+  "QUBT": {
+    "name": "Quantum Computing",
+    "days": 1809
+  },
+  "RBLX": {
+    "name": "Roblox",
+    "days": 1361
+  },
+  "RGTI": {
+    "name": "Rigetti Computing",
+    "days": 1331
+  },
+  "RKLB": {
+    "name": "Rocket Lab",
+    "days": 1432
+  },
+  "ROKU": {
+    "name": "Roku Inc",
+    "days": 2227
+  },
+  "RPD": {
+    "name": "Rapid7",
+    "days": 2665
+  },
+  "S": {
+    "name": "SentinelOne",
+    "days": 1283
+  },
+  "SAP": {
+    "name": "SAP SE",
+    "days": 2665
+  },
+  "SHOP": {
+    "name": "Shopify",
+    "days": 2665
+  },
+  "SITM": {
+    "name": "SiTime",
+    "days": 1686
+  },
+  "SMCI": {
+    "name": "超微电脑",
+    "days": 2665
+  },
+  "SNOW": {
+    "name": "Snowflake",
+    "days": 1481
+  },
+  "SNPS": {
+    "name": "新思科技",
+    "days": 2665
+  },
+  "STX": {
+    "name": "希捷科技",
+    "days": 2665
+  },
+  "SWKS": {
+    "name": "思佳讯",
+    "days": 2665
+  },
+  "TEAM": {
+    "name": "Atlassian",
+    "days": 2665
+  },
+  "TENB": {
+    "name": "Tenable Holdings",
+    "days": 2020
+  },
+  "TER": {
+    "name": "泰瑞达",
+    "days": 2665
+  },
+  "TSLA": {
+    "name": "特斯拉",
+    "days": 2665
+  },
+  "TSM": {
+    "name": "台积电",
+    "days": 2665
+  },
+  "TTD": {
+    "name": "The Trade Desk",
+    "days": 2484
+  },
+  "TWLO": {
+    "name": "Twilio",
+    "days": 2546
+  },
+  "TXN": {
+    "name": "德州仪器",
+    "days": 2665
+  },
+  "TYL": {
+    "name": "泰勒科技",
+    "days": 2665
+  },
+  "U": {
+    "name": "Unity Software",
+    "days": 1479
+  },
+  "UBER": {
+    "name": "优步",
+    "days": 1822
+  },
+  "UCTT": {
+    "name": "超科林半导体",
+    "days": 2665
+  },
+  "VRNS": {
+    "name": "Varonis系统",
+    "days": 2665
+  },
+  "WDAY": {
+    "name": "Workday",
+    "days": 2665
+  },
+  "WDC": {
+    "name": "西部数据",
+    "days": 2665
+  },
+  "WIX": {
+    "name": "Wix.com",
+    "days": 2665
+  },
+  "WOLF": {
+    "name": "Wolfspeed",
+    "days": 2665
+  },
+  "ZG": {
+    "name": "Zillow-A",
+    "days": 2665
+  },
+  "ZM": {
+    "name": "Zoom通讯",
+    "days": 1837
+  },
+  "ZS": {
+    "name": "Zscaler",
+    "days": 2111
+  }
+}

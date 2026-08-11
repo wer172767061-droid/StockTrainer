@@ -1,0 +1,1351 @@
+/* ============================================
+   Stock Trainer - 手机版深色交易终端
+   红涨绿跌（中国股市惯例）
+   ============================================ */
+
+:root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #1c2128;
+    --bg-hover: #21262d;
+    --border-color: #30363d;
+    --border-light: #21262d;
+
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+
+    --color-up: #ef4444;
+    --color-up-bg: rgba(239, 68, 68, 0.12);
+    --color-down: #22c55e;
+    --color-down-bg: rgba(34, 197, 94, 0.12);
+    --color-accent: #3b82f6;
+    --color-warning: #f59e0b;
+    --color-info: #6366f1;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+input {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+}
+
+/* ============================================
+   顶部栏
+   ============================================ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    height: 44px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    gap: 10px;
+    overflow: visible;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.logo-icon { font-size: 20px; }
+.logo-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.account-scroll {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+}
+.account-scroll::-webkit-scrollbar { display: none; }
+
+.acct-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex-shrink: 0;
+}
+.acct-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.acct-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.acct-value.up { color: var(--color-up); }
+.acct-value.down { color: var(--color-down); }
+
+.day-badge {
+    background: var(--bg-tertiary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.cum-badge {
+    background: var(--bg-tertiary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    flex-direction: row !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+.cum-item {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.cum-item .up { color: var(--color-up); font-weight: 600; }
+.cum-item .down { color: var(--color-down); font-weight: 600; }
+
+/* ============================================
+   股票信息头
+   ============================================ */
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.stock-id {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.stock-symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.stock-ticker {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+.data-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.data-badge.real {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-accent);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.data-badge.sim {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.price-block {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.price-now {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+.price-chg {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   财报提醒
+   ============================================ */
+.earnings-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.earnings-banner .earnings-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.earnings-banner.earnings-soon {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border-top: 1px solid rgba(251, 191, 36, 0.25);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+}
+.earnings-banner.earnings-today {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-top: 1px solid rgba(239, 68, 68, 0.3);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+    animation: earningsPulse 1.5s ease-in-out infinite;
+}
+@keyframes earningsPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* ============================================
+   K线图
+   ============================================ */
+.chart-wrapper {
+    flex: 1;
+    padding: 4px;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+}
+.chart-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    touch-action: none;
+}
+
+/* 成交量均线图例 */
+.vol-legend {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 20;
+    pointer-events: none;
+    font-size: 10px;
+    font-family: var(--font-mono);
+}
+
+/* 价格tooltip */
+.price-tooltip {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    z-index: 20;
+    pointer-events: none;
+    background: rgba(13, 17, 23, 0.92);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    min-width: 95px;
+    line-height: 1.5;
+}
+.pt-date {
+    color: var(--text-secondary);
+    font-size: 9px;
+    margin-bottom: 2px;
+}
+.pt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+.pt-label {
+    color: var(--text-muted);
+}
+.pt-val {
+    color: var(--text-primary);
+}
+.pt-change {
+    margin-top: 2px;
+    font-weight: 600;
+    font-size: 11px;
+}
+.vol-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-secondary);
+    background: rgba(13, 17, 23, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+.vol-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   持仓状态栏
+   ============================================ */
+.position-bar {
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.position-bar::-webkit-scrollbar { display: none; }
+.no-position {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.pos-tag {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.pos-tag.long {
+    background: var(--color-up-bg);
+    color: var(--color-up);
+}
+.pos-tag.short {
+    background: var(--color-down-bg);
+    color: var(--color-down);
+}
+
+/* ============================================
+   交易面板
+   ============================================ */
+.trade-panel {
+    background: var(--bg-secondary);
+    padding: 8px 10px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 百分比选择 */
+.qty-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 交易估算显示 */
+.trade-estimate {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    font-family: var(--font-mono);
+    min-height: 16px;
+    line-height: 16px;
+}
+
+/* 交易按钮 */
+.trade-actions {
+    display: flex;
+    gap: 6px;
+}
+.trade-pair {
+    flex: 1;
+    display: flex;
+    gap: 6px;
+}
+.btn-long, .btn-short {
+    flex: 1;
+    height: 44px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.1s;
+}
+.btn-long {
+    background: var(--color-up);
+    color: #fff;
+}
+.btn-long:active:not(:disabled) {
+    background: #dc2626;
+    transform: scale(0.97);
+}
+.btn-long:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+.btn-short {
+    background: var(--color-down);
+    color: #fff;
+}
+.btn-short:active:not(:disabled) {
+    background: #16a34a;
+    transform: scale(0.97);
+}
+.btn-short:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.btn-close-pos {
+    flex: 0 0 70px;
+    height: 44px;
+    border: 1px solid var(--color-warning);
+    background: transparent;
+    color: var(--color-warning);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.btn-close-pos:active:not(:disabled) {
+    background: rgba(245, 158, 11, 0.12);
+}
+.btn-close-pos:disabled {
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* 下一天 / 跳过 */
+.nav-actions {
+    display: flex;
+    gap: 6px;
+}
+.btn-next {
+    flex: 1;
+    height: 44px;
+    border: none;
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.1s;
+}
+.btn-next:active:not(:disabled) {
+    background: #2563eb;
+    transform: scale(0.97);
+}
+.btn-next:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.btn-skip {
+    flex: 0 0 70px;
+    height: 44px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.btn-skip:active:not(:disabled) {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+    background: rgba(245, 158, 11, 0.08);
+}
+.btn-skip:disabled {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* ============================================
+   交易记录抽屉
+   ============================================ */
+.history-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 500;
+}
+.history-overlay.show {
+    display: block;
+}
+.history-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 50vh;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-radius: 16px 16px 0 0;
+    z-index: 501;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: var(--safe-bottom);
+}
+.history-drawer.show {
+    transform: translateY(0);
+}
+.history-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+.history-drawer-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.history-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.history-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px;
+}
+.empty-history {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 30px 0;
+}
+.trade-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+.trade-day {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    font-size: 11px;
+    flex: 0 0 28px;
+}
+.trade-action {
+    font-weight: 600;
+    flex: 0 0 36px;
+    font-size: 12px;
+}
+.trade-action.long { color: var(--color-up); }
+.trade-action.short { color: var(--color-down); }
+.trade-detail {
+    flex: 1;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+/* ============================================
+   弹窗
+   ============================================ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    padding: 16px;
+}
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+/* 弹窗右上角关闭按钮 */
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.15s;
+}
+.modal-close-btn:active {
+    background: var(--border-color);
+    color: var(--text-primary);
+    transform: scale(0.92);
+}
+
+.modal-title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.result-summary {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.result-summary > div:first-child {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+.return-rate {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.result-detail-item {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+}
+.result-detail-item .label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.result-detail-item .val {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    margin-top: 2px;
+}
+
+.result-stock {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.btn-restart {
+    width: 100%;
+    height: 46px;
+    border: none;
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.1s;
+}
+.btn-restart:active {
+    background: #2563eb;
+    transform: scale(0.97);
+}
+
+.btn-reset {
+    width: 100%;
+    height: 38px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.1s;
+    margin-top: 8px;
+}
+.btn-reset:active {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+}
+
+/* 跳过弹窗 */
+.skip-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.skip-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+.skip-result-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.skip-result-val {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+.skip-result-val.up { color: var(--color-up); }
+.skip-result-val.down { color: var(--color-down); }
+.skip-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 2px 0;
+}
+.skip-stock-info {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* ============================================
+   Toast
+   ============================================ */
+.toast-container {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+    padding: 0 12px;
+    pointer-events: none;
+}
+.toast {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    animation: toastIn 0.3s ease;
+    text-align: center;
+    max-width: 100%;
+}
+.toast.success {
+    background: var(--color-down);
+    color: #fff;
+}
+.toast.error {
+    background: var(--color-up);
+    color: #fff;
+}
+.toast.warning {
+    background: var(--color-warning);
+    color: #000;
+}
+.toast.info {
+    background: var(--color-info);
+    color: #fff;
+}
+@keyframes toastIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ============================================
+   Loading
+   ============================================ */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 17, 23, 0.95);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+.loading-overlay.hidden {
+    display: none;
+}
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--bg-tertiary);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+/* ============================================
+   划线画图系统
+   ============================================ */
+.draw-overlay {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    pointer-events: none;
+    z-index: 15;
+    overflow: visible;
+    touch-action: none;
+}
+
+/* 画图开关按钮 */
+.draw-toggle {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: rgba(22, 27, 34, 0.92);
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+}
+.draw-toggle:active {
+    transform: scale(0.9);
+}
+.draw-toggle.active {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+}
+
+/* 画图工具栏 */
+.draw-toolbar {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 54px;
+    display: flex;
+    gap: 3px;
+    background: rgba(22, 27, 34, 0.95);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px;
+    z-index: 25;
+    overflow-x: auto;
+    scrollbar-width: none;
+    backdrop-filter: blur(8px);
+}
+.draw-toolbar::-webkit-scrollbar { display: none; }
+
+.dt-btn {
+    flex-shrink: 0;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.1s;
+}
+.dt-btn:active {
+    transform: scale(0.94);
+}
+.dt-btn.active {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.dt-btn.dt-action {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+}
+.dt-btn.dt-action:active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+.dt-btn.dt-close-btn {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 0 8px;
+    border: none;
+}
+.dt-btn.dt-magnet {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+}
+.dt-btn.dt-magnet.active {
+    background: rgba(34, 211, 238, 0.15);
+    border-color: #22d3ee;
+    color: #22d3ee;
+}
+
+/* 画图提示 */
+.draw-indicator {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 27, 34, 0.92);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    z-index: 25;
+    pointer-events: none;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   止损单
+   ============================================ */
+.stop-loss-modal {
+    max-width: 380px;
+}
+.sl-position-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+.sl-input-section {
+    margin-bottom: 16px;
+}
+.sl-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+.sl-input-row {
+    display: flex;
+    align-items: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+}
+.sl-currency {
+    color: var(--text-secondary);
+    font-size: 18px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+.sl-input {
+    flex: 1;
+    height: 48px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    outline: none;
+    padding: 0 8px;
+    -webkit-user-select: text;
+    user-select: text;
+}
+.sl-quick-section {
+    margin-bottom: 16px;
+}
+.sl-quick-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+.sl-quick-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.sl-quick-btn {
+    min-width: 56px;
+    height: 48px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+}
+.sl-quick-btn:active {
+    background: var(--bg-hover);
+    transform: scale(0.95);
+}
+.sl-quick-btn span {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+.sl-preview {
+    padding: 10px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-height: 20px;
+    line-height: 1.5;
+}
+.sl-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+.btn-sl-set {
+    flex: 1;
+    height: 46px;
+    border: none;
+    background: var(--color-warning);
+    color: #000;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.1s;
+}
+.btn-sl-set:active {
+    transform: scale(0.97);
+}
+.btn-sl-cancel {
+    flex: 0 0 auto;
+    height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--color-up);
+    background: transparent;
+    color: var(--color-up);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.btn-sl-cancel:active {
+    background: var(--color-up-bg);
+}
+
+/* 持仓栏止损标签 */
+.sl-tag {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--color-warning);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.sl-set-btn {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border: 1px dashed var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.sl-set-btn:active {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+/* ============================================
+   左侧止损浮动面板
+   ============================================ */
+.sl-floating-panel {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    background: rgba(22, 27, 34, 0.92);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+    padding: 8px 10px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    min-width: 110px;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: box-shadow 0.15s;
+}
+.sl-floating-panel.dragging {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    border-color: rgba(245, 158, 11, 0.6);
+}
+.sl-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+    cursor: grab;
+}
+.sl-panel-header:active {
+    cursor: grabbing;
+}
+.sl-panel-icon { font-size: 12px; }
+.sl-panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-warning);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex: 1;
+}
+.sl-panel-drag-hint {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    cursor: grab;
+}
+.sl-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+.sl-panel-price {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--color-warning);
+}
+.sl-panel-dist {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+.sl-panel-notset {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 2px 0;
+}
+.sl-panel-btn {
+    width: 100%;
+    height: 28px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.sl-panel-btn:active {
+    background: rgba(245, 158, 11, 0.2);
+    transform: scale(0.95);
+}
+.sl-panel-cancel {
+    width: 100%;
+    height: 24px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.1s;
+}
+.sl-panel-cancel:active {
+    border-color: var(--color-up);
+    color: var(--color-up);
+}
+/* 止损线左侧标签 */
+.sl-line-label {
+    position: absolute;
+    left: 0;
+    z-index: 25;
+    transform: translateY(-50%);
+    background: rgba(245, 158, 11, 0.92);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 0 4px 4px 0;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+}
+
+/* ============================================
+   平板/大屏适配
+   ============================================ */
+@media (min-width: 768px) {
+    #app {
+        max-width: 500px;
+        margin: 0 auto;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
+}
