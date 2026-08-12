@@ -1,0 +1,5 @@
+stock_data/
+__pycache__/
+.DS_Store
+*.pyc
+StockTrainer_export.zip

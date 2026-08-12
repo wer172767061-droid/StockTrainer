@@ -3,244 +3,69 @@
  * 数据源：本地后端 API（富途牛牛数据）
  */
 
-// ===== 美股股票池（280+只，覆盖主要热门股票） =====
+// ===== 科技股池（纳斯达克100 + 标普500科技 + 热门科技股）=====
+// 已排除: 中概股、医疗健康、保险、传统金融、能源、材料、消费、工业
+// 市值过滤: 近3年每年市值都 > $100亿
 const US_STOCKS = [
-    // === 科技巨头 ===
+    // === NASDAQ 100 核心科技巨头 ===
     {code:'AAPL',name:'苹果',mkt:105},{code:'MSFT',name:'微软',mkt:105},
-    {code:'GOOGL',name:'谷歌',mkt:105},{code:'AMZN',name:'亚马逊',mkt:105},
-    {code:'META',name:'Meta',mkt:105},{code:'NVDA',name:'英伟达',mkt:105},
-    {code:'AMD',name:'AMD',mkt:105},{code:'INTC',name:'英特尔',mkt:105},
-    {code:'AVGO',name:'博通',mkt:105},{code:'ADBE',name:'Adobe',mkt:105},
-    {code:'CSCO',name:'思科',mkt:105},{code:'QCOM',name:'高通',mkt:105},
-    {code:'TXN',name:'德州仪器',mkt:105},{code:'ORCL',name:'甲骨文',mkt:105},
-    {code:'CRM',name:'Salesforce',mkt:105},{code:'IBM',name:'IBM',mkt:106},
-    {code:'NOW',name:'ServiceNow',mkt:105},{code:'CRWD',name:'CrowdStrike',mkt:105},
-    {code:'PLTR',name:'Palantir',mkt:105},{code:'NET',name:'Cloudflare',mkt:105},
-    {code:'PYPL',name:'PayPal',mkt:105},{code:'UBER',name:'Uber',mkt:105},
-    {code:'ABNB',name:'Airbnb',mkt:105},{code:'SHOP',name:'Shopify',mkt:105},
-    {code:'SQ',name:'Block',mkt:106},{code:'SNOW',name:'Snowflake',mkt:105},
-    {code:'DDOG',name:'Datadog',mkt:105},{code:'ZM',name:'Zoom',mkt:105},
-    {code:'TEAM',name:'Atlassian',mkt:105},{code:'MDB',name:'MongoDB',mkt:105},
-    {code:'OKTA',name:'Okta',mkt:105},{code:'TSLA',name:'特斯拉',mkt:105},
-    {code:'NFLX',name:'奈飞',mkt:105},{code:'COST',name:'好市多',mkt:105},
-    {code:'SBUX',name:'星巴克',mkt:105},{code:'BKNG',name:'Booking',mkt:105},
-    {code:'MDLZ',name:'亿滋',mkt:105},{code:'DLTR',name:'Dollar Tree',mkt:105},
-    {code:'MELI',name:'美客多',mkt:105},{code:'CHTR',name:'特许通讯',mkt:105},
-    {code:'EBAY',name:'eBay',mkt:105},{code:'ROKU',name:'Roku',mkt:105},
-    {code:'JPM',name:'摩根大通',mkt:106},{code:'BAC',name:'美国银行',mkt:106},
-    {code:'GS',name:'高盛',mkt:106},{code:'MS',name:'摩根士丹利',mkt:106},
-    {code:'V',name:'Visa',mkt:106},{code:'MA',name:'万事达',mkt:106},
-    {code:'WFC',name:'富国银行',mkt:106},{code:'AXP',name:'美国运通',mkt:106},
-    {code:'BLK',name:'贝莱德',mkt:106},{code:'C',name:'花旗',mkt:106},
-    {code:'JNJ',name:'强生',mkt:106},{code:'PFE',name:'辉瑞',mkt:106},
-    {code:'UNH',name:'联合健康',mkt:106},{code:'ABBV',name:'艾伯维',mkt:106},
-    {code:'LLY',name:'礼来',mkt:106},{code:'MRK',name:'默沙东',mkt:106},
-    {code:'TMO',name:'赛默飞',mkt:106},{code:'ABT',name:'雅培',mkt:106},
-    {code:'AMGN',name:'安进',mkt:106},{code:'GILD',name:'吉利德',mkt:106},
-    {code:'ISRG',name:'直觉外科',mkt:106},{code:'XOM',name:'埃克森美孚',mkt:106},
-    {code:'CVX',name:'雪佛龙',mkt:106},{code:'COP',name:'康菲石油',mkt:106},
-    {code:'BA',name:'波音',mkt:106},{code:'CAT',name:'卡特彼勒',mkt:106},
-    {code:'GE',name:'通用电气',mkt:106},{code:'MMM',name:'3M',mkt:106},
-    {code:'HON',name:'霍尼韦尔',mkt:106},{code:'DIS',name:'迪士尼',mkt:106},
-    {code:'NKE',name:'耐克',mkt:106},{code:'WMT',name:'沃尔玛',mkt:106},
-    {code:'KO',name:'可口可乐',mkt:106},{code:'PEP',name:'百事',mkt:106},
-    {code:'MCD',name:'麦当劳',mkt:106},{code:'HD',name:'家得宝',mkt:106},
-    {code:'LOW',name:'劳氏',mkt:106},{code:'T',name:'AT&T',mkt:106},
-    {code:'VZ',name:'Verizon',mkt:106},{code:'BABA',name:'阿里巴巴',mkt:106},
-    {code:'JD',name:'京东',mkt:105},{code:'PDD',name:'拼多多',mkt:105},
-    {code:'BIDU',name:'百度',mkt:105},{code:'NIO',name:'蔚来',mkt:106},
-    {code:'XPEV',name:'小鹏',mkt:106},{code:'LI',name:'理想',mkt:105},
-    {code:'TSM',name:'台积电',mkt:106},{code:'ASML',name:'ASML',mkt:105},
-    {code:'AMAT',name:'应用材料',mkt:105},{code:'MU',name:'美光',mkt:105},
+    {code:'GOOGL',name:'谷歌A',mkt:105},{code:'GOOG',name:'谷歌C',mkt:105},
+    {code:'AMZN',name:'亚马逊',mkt:105},{code:'META',name:'Meta',mkt:105},
+    {code:'NVDA',name:'英伟达',mkt:105},{code:'AMD',name:'AMD',mkt:105},
+    {code:'INTC',name:'英特尔',mkt:105},{code:'AVGO',name:'博通',mkt:105},
+    {code:'ADBE',name:'Adobe',mkt:105},{code:'CSCO',name:'思科',mkt:105},
+    {code:'QCOM',name:'高通',mkt:105},{code:'TXN',name:'德州仪器',mkt:105},
+    {code:'ORCL',name:'甲骨文',mkt:105},{code:'CRM',name:'Salesforce',mkt:105},
+    {code:'NOW',name:'ServiceNow',mkt:105},{code:'INTU',name:'Intuit',mkt:105},
+    {code:'MU',name:'美光',mkt:105},{code:'AMAT',name:'应用材料',mkt:105},
     {code:'ADI',name:'亚德诺',mkt:105},{code:'LRCX',name:'泛林',mkt:105},
     {code:'NXPI',name:'恩智浦',mkt:105},{code:'MCHP',name:'微芯',mkt:105},
-    {code:'MRVL',name:'迈威尔',mkt:105},{code:'ARM',name:'ARM',mkt:105},
-    {code:'FSLR',name:'First Solar',mkt:105},{code:'ENPH',name:'Enphase',mkt:105},
-    // === 科技/社交 ===
-    {code:'COIN',name:'Coinbase',mkt:105},{code:'HOOD',name:'Robinhood',mkt:105},
-    {code:'DASH',name:'DoorDash',mkt:105},{code:'SPOT',name:'Spotify',mkt:105},
-    {code:'PINS',name:'Pinterest',mkt:105},{code:'SNAP',name:'Snap',mkt:105},
-    {code:'RBLX',name:'Roblox',mkt:105},{code:'U',name:'Unity',mkt:105},
-    {code:'MARA',name:'Marathon Digital',mkt:105},{code:'RIVN',name:'Rivian',mkt:105},
-    {code:'LCID',name:'Lucid',mkt:105},{code:'AFRM',name:'Affirm',mkt:105},
-    {code:'TWLO',name:'Twilio',mkt:105},{code:'DOCU',name:'DocuSign',mkt:105},
-    {code:'ANET',name:'Arista Networks',mkt:105},{code:'KLAC',name:'KLA',mkt:105},
-    {code:'ON',name:'安森美半导体',mkt:105},{code:'SWKS',name:'Skyworks',mkt:105},
-    {code:'QRVO',name:'Qorvo',mkt:106},{code:'MPWR',name:'Monolithic Power',mkt:105},
-    {code:'CDW',name:'CDW',mkt:106},{code:'IT',name:'Gartner',mkt:105},
+    {code:'MRVL',name:'迈威尔',mkt:105},{code:'KLAC',name:'KLA',mkt:105},
+    {code:'ANET',name:'Arista',mkt:105},{code:'ON',name:'安森美',mkt:105},
+    // === S&P 500 信息技术 ===
+    {code:'IBM',name:'IBM',mkt:106},{code:'ACN',name:'埃森哲',mkt:106},
+    {code:'CTSH',name:'Cognizant',mkt:105},{code:'IT',name:'Gartner',mkt:105},
     {code:'KEYS',name:'Keysight',mkt:106},{code:'TER',name:'Teradyne',mkt:106},
     {code:'STX',name:'希捷',mkt:106},{code:'WDC',name:'西部数据',mkt:106},
     {code:'NTAP',name:'NetApp',mkt:106},{code:'HPQ',name:'惠普',mkt:106},
-    {code:'HPE',name:'慧与科技',mkt:106},{code:'PANW',name:'Palo Alto',mkt:105},
-    {code:'FTNT',name:'Fortinet',mkt:105},{code:'SNPS',name:'Synopsys',mkt:105},
-    {code:'CDNS',name:'Cadence',mkt:105},{code:'INTU',name:'Intuit',mkt:105},
-    {code:'WDAY',name:'Workday',mkt:105},{code:'ANSS',name:'ANSYS',mkt:105},
-    {code:'TYL',name:'Tyler Tech',mkt:105},{code:'GTLB',name:'GitLab',mkt:105},
-    // === 医疗健康 ===
-    {code:'MRNA',name:'Moderna',mkt:105},{code:'REGN',name:'再生元',mkt:105},
-    {code:'VRTX',name:'Vertex',mkt:105},{code:'ELV',name:'Elevance',mkt:106},
-    {code:'CI',name:'Cigna',mkt:106},{code:'HUM',name:'Humana',mkt:106},
-    {code:'DHR',name:'丹纳赫',mkt:106},{code:'BDX',name:'Becton Dickinson',mkt:106},
-    {code:'SYK',name:'史赛克',mkt:106},{code:'BSX',name:'波士顿科学',mkt:106},
-    {code:'EW',name:'爱德华兹',mkt:106},{code:'ZTS',name:'硕腾',mkt:106},
-    {code:'BMY',name:'百时美施贵宝',mkt:106},{code:'AZN',name:'阿斯利康',mkt:106},
-    {code:'ILMN',name:'Illumina',mkt:105},{code:'ALGN',name:'Align Tech',mkt:105},
-    {code:'IDXX',name:'IDEXX',mkt:106},{code:'MCK',name:'McKesson',mkt:106},
-    {code:'CAH',name:'Cardinal Health',mkt:106},{code:'CNC',name:'Centene',mkt:106},
-    {code:'HCA',name:'HCA医疗',mkt:106},{code:'DGX',name:'Quest Diagnostics',mkt:106},
-    {code:'LH',name:'Labcorp',mkt:106},{code:'WST',name:'West Pharma',mkt:106},
-    {code:'COO',name:'Cooper Companies',mkt:106},{code:'STE',name:'STERIS',mkt:106},
-    {code:'PODD',name:'Insulet',mkt:105},{code:'BIIB',name:'渤健',mkt:106},
-    {code:'AIZ',name:'Arch Capital',mkt:106},{code:'BAX',name:'百特',mkt:106},
-    // === 金融保险 ===
-    {code:'SCHW',name:'嘉信理财',mkt:106},{code:'USB',name:'合众银行',mkt:106},
-    {code:'PNC',name:'PNC金融',mkt:106},{code:'TFC',name:'Truist',mkt:106},
-    {code:'COF',name:'Capital One',mkt:106},{code:'AIG',name:'AIG',mkt:106},
-    {code:'MET',name:'大都会人寿',mkt:106},{code:'PRU',name:'保德信',mkt:106},
-    {code:'ALL',name:'好事达',mkt:106},{code:'TRV',name:'旅行者',mkt:106},
-    {code:'MMC',name:'Marsh & McLennan',mkt:106},{code:'AON',name:'Aon',mkt:106},
-    {code:'SPGI',name:'S&P Global',mkt:106},{code:'MCO',name:'穆迪',mkt:106},
-    {code:'TROW',name:'T Rowe Price',mkt:106},{code:'BEN',name:'富兰克林资源',mkt:106},
-    {code:'BK',name:'纽约梅隆',mkt:106},{code:'STT',name:'道富',mkt:106},
-    {code:'FITB',name:'Fifth Third',mkt:106},{code:'MTB',name:'M&T银行',mkt:106},
-    {code:'RF',name:'Regions',mkt:106},{code:'HBAN',name:'Huntington',mkt:106},
-    {code:'CFG',name:'Citizens',mkt:106},{code:'NTRS',name:'北方信托',mkt:106},
-    {code:'AMP',name:'Ameriprise',mkt:106},{code:'RJF',name:'Raymond James',mkt:106},
-    // === 消费零售 ===
-    {code:'PG',name:'宝洁',mkt:106},{code:'CL',name:'高露洁',mkt:106},
-    {code:'GIS',name:'通用磨坊',mkt:106},{code:'K',name:'家乐氏',mkt:106},
-    {code:'KMB',name:'金佰利',mkt:106},{code:'DKNG',name:'DraftKings',mkt:106},
-    {code:'ETSY',name:'Etsy',mkt:106},{code:'CHWY',name:'Chewy',mkt:105},
-    {code:'TJX',name:'TJ Maxx',mkt:106},{code:'ROST',name:'Ross',mkt:106},
-    {code:'DG',name:'Dollar General',mkt:106},{code:'BBY',name:'百思买',mkt:106},
-    {code:'ULTA',name:'Ulta Beauty',mkt:105},{code:'LULU',name:'Lululemon',mkt:105},
-    {code:'TGT',name:'Target',mkt:106},{code:'KR',name:'Kroger',mkt:106},
-    {code:'CMG',name:'Chipotle',mkt:106},{code:'DPZ',name:'达美乐',mkt:106},
-    {code:'YUM',name:'百胜餐饮',mkt:106},{code:'ACN',name:'埃森哲',mkt:106},
-    {code:'CTAS',name:'Cintas',mkt:106},{code:'MAR',name:'万豪',mkt:106},
-    {code:'HLT',name:'希尔顿',mkt:106},{code:'CCL',name:'嘉年华',mkt:106},
-    {code:'RCL',name:'皇家加勒比',mkt:106},{code:'PVH',name:'PVH',mkt:106},
-    {code:'VFC',name:'VF Corp',mkt:106},{code:'ROL',name:'Rollins',mkt:106},
-    // === 能源 ===
-    {code:'SLB',name:'斯伦贝谢',mkt:106},{code:'EOG',name:'EOG能源',mkt:106},
-    {code:'OXY',name:'西方石油',mkt:106},{code:'MPC',name:'Marathon Petroleum',mkt:106},
-    {code:'VLO',name:'Valero',mkt:106},{code:'PSX',name:'Phillips 66',mkt:106},
-    {code:'KMI',name:'Kinder Morgan',mkt:106},{code:'WMB',name:'Williams',mkt:106},
-    {code:'OKE',name:'ONEOK',mkt:106},{code:'ET',name:'Energy Transfer',mkt:106},
-    {code:'EPD',name:'Enterprise Products',mkt:106},{code:'DVN',name:'Devon Energy',mkt:106},
-    {code:'FANG',name:'Diamondback',mkt:106},{code:'HES',name:'Hess',mkt:106},
-    {code:'MRO',name:'Marathon Oil',mkt:106},{code:'CTRA',name:'Coterra',mkt:106},
-    {code:'AR',name:'Antero Resources',mkt:106},{code:'EQT',name:'EQT',mkt:106},
-    // === 工业运输 ===
-    {code:'UPS',name:'UPS',mkt:106},{code:'FDX',name:'FedEx',mkt:106},
-    {code:'DE',name:'迪尔',mkt:106},{code:'CMI',name:'康明斯',mkt:106},
-    {code:'GD',name:'通用动力',mkt:106},{code:'NOC',name:'诺斯洛普·格鲁曼',mkt:106},
-    {code:'LMT',name:'洛克希德·马丁',mkt:106},{code:'RTX',name:'RTX',mkt:106},
-    {code:'ITW',name:'伊利诺伊工具',mkt:106},{code:'ROK',name:'罗克韦尔',mkt:106},
-    {code:'DOV',name:'Dover',mkt:106},{code:'PWR',name:'Quanta Services',mkt:106},
-    {code:'ETN',name:'Eaton',mkt:106},{code:'TDG',name:'TransDigm',mkt:106},
-    {code:'GNRC',name:'Generac',mkt:106},{code:'PNR',name:'Pentair',mkt:106},
-    // === 汽车 ===
-    {code:'GM',name:'通用汽车',mkt:106},{code:'F',name:'福特',mkt:106},
-    // === 媒体通讯 ===
-    {code:'WBD',name:'华纳兄弟',mkt:106},{code:'PARA',name:'派拉蒙',mkt:106},
-    {code:'CMCSA',name:'康卡斯特',mkt:106},{code:'TMUS',name:'T-Mobile',mkt:106},
-    {code:'FOX',name:'福克斯',mkt:106},{code:'WMG',name:'华纳音乐',mkt:106},
-    {code:'NWSA',name:'新闻集团',mkt:106},{code:'LYV',name:'Live Nation',mkt:106},
-    // === 公用事业 ===
-    {code:'NEE',name:'NextEra',mkt:106},{code:'DUK',name:'杜克能源',mkt:106},
-    {code:'SO',name:'南方电力',mkt:106},{code:'D',name:'Dominion',mkt:106},
-    {code:'EXC',name:'Exelon',mkt:106},{code:'AEP',name:'美国电力',mkt:106},
-    {code:'SRE',name:'Sempra',mkt:106},{code:'XEL',name:'Xcel Energy',mkt:106},
-    // === 材料 ===
-    {code:'LIN',name:'林德',mkt:106},{code:'APD',name:'空气化工',mkt:106},
-    {code:'FCX',name:'自由港',mkt:106},{code:'NEM',name:'纽蒙特',mkt:106},
-    {code:'NUE',name:'纽柯钢铁',mkt:106},{code:'SHW',name:'宣伟涂料',mkt:106},
-    {code:'PPG',name:'PPG工业',mkt:106},{code:'DOW',name:'陶氏',mkt:106},
-    {code:'ALB',name:'雅保',mkt:106},{code:'CF',name:'CF工业',mkt:106},
-    {code:'MOS',name:'美盛',mkt:106},{code:'ECL',name:'艺康',mkt:106},
-    {code:'EMN',name:'伊士曼',mkt:106},{code:'LYB',name:'利安德巴塞尔',mkt:106},
-    // === REITs ===
-    {code:'EQIX',name:'Equinix',mkt:106},{code:'PSA',name:'Public Storage',mkt:106},
-    {code:'PLD',name:'安博',mkt:106},{code:'AMT',name:'美国电塔',mkt:106},
-    {code:'O',name:'Realty Income',mkt:106},{code:'EXR',name:'Extra Space',mkt:106},
-    {code:'AVB',name:'AvalonBay',mkt:106},{code:'EQR',name:'Equity Residential',mkt:106},
-    {code:'DLR',name:'Digital Realty',mkt:106},{code:'WELL',name:'Welltower',mkt:106},
-    {code:'VTR',name:'Ventas',mkt:106},{code:'SPG',name:'Simon Property',mkt:106},
-    {code:'CPT',name:'Camden Property',mkt:106},{code:'UDR',name:'UDR',mkt:106},
-    {code:'ARE',name:'Alexandria',mkt:106},{code:'INVH',name:'Invitation Homes',mkt:106},
-    // === 半导体追加 ===
-    {code:'ONTO',name:'Onto Innovation',mkt:105},{code:'AEHR',name:'Aehr Test',mkt:105},
-    {code:'CAMT',name:'Camtek',mkt:105},{code:'UCTT',name:'UCT',mkt:105},
-    {code:'ACMR',name:'ACM Research',mkt:105},{code:'OSIS',name:'OSI Systems',mkt:106},
-    // === 科技/软件扩展 ===
-    {code:'ZS',name:'Zscaler',mkt:105},{code:'PATH',name:'UiPath',mkt:105},
+    {code:'HPE',name:'慧与',mkt:106},{code:'ANSS',name:'ANSYS',mkt:105},
+    {code:'FFIV',name:'F5',mkt:106},{code:'CHKP',name:'Check Point',mkt:106},
+    {code:'PANW',name:'Palo Alto',mkt:105},{code:'FTNT',name:'Fortinet',mkt:105},
+    {code:'SNPS',name:'Synopsys',mkt:105},{code:'CDNS',name:'Cadence',mkt:105},
+    {code:'WDAY',name:'Workday',mkt:105},
+    // === 网络平台 / 互联网科技 ===
+    {code:'TSLA',name:'特斯拉',mkt:105},{code:'NFLX',name:'奈飞',mkt:105},
+    {code:'UBER',name:'Uber',mkt:105},{code:'ABNB',name:'Airbnb',mkt:105},
+    {code:'SHOP',name:'Shopify',mkt:105},{code:'PYPL',name:'PayPal',mkt:105},
+    {code:'DASH',name:'DoorDash',mkt:105},{code:'ROKU',name:'Roku',mkt:105},
+    {code:'PINS',name:'Pinterest',mkt:105},{code:'SNAP',name:'Snap',mkt:105},
+    {code:'SPOT',name:'Spotify',mkt:105},
+    // === 云计算 / SaaS ===
+    {code:'SNOW',name:'Snowflake',mkt:105},{code:'DDOG',name:'Datadog',mkt:105},
+    {code:'TEAM',name:'Atlassian',mkt:105},{code:'MDB',name:'MongoDB',mkt:105},
+    {code:'OKTA',name:'Okta',mkt:105},{code:'CRWD',name:'CrowdStrike',mkt:105},
+    {code:'PLTR',name:'Palantir',mkt:105},{code:'NET',name:'Cloudflare',mkt:105},
+    {code:'GTLB',name:'GitLab',mkt:105},{code:'HUBS',name:'HubSpot',mkt:105},
+    {code:'BILL',name:'Bill.com',mkt:105},{code:'MNDY',name:'Monday.com',mkt:105},
+    {code:'ZS',name:'Zscaler',mkt:105},{code:'TTD',name:'Trade Desk',mkt:105},
+    {code:'APP',name:'AppLovin',mkt:105},{code:'NTNX',name:'Nutanix',mkt:105},
     {code:'ESTC',name:'Elastic',mkt:105},{code:'FROG',name:'JFrog',mkt:105},
     {code:'PD',name:'PagerDuty',mkt:105},{code:'DOCN',name:'DigitalOcean',mkt:105},
-    {code:'AI',name:'C3.ai',mkt:105},{code:'AYX',name:'Alteryx',mkt:105},
     {code:'WIX',name:'Wix',mkt:105},{code:'GDDY',name:'GoDaddy',mkt:105},
-    {code:'DELL',name:'戴尔',mkt:106},{code:'SMCI',name:'超微电脑',mkt:106},
-    {code:'HUBS',name:'HubSpot',mkt:105},{code:'BILL',name:'Bill Holdings',mkt:105},
-    {code:'MNDY',name:'Monday.com',mkt:105},{code:'ZI',name:'ZoomInfo',mkt:105},
-    {code:'PCOR',name:'Procore',mkt:105},{code:'TTD',name:'Trade Desk',mkt:105},
-    {code:'APP',name:'AppLovin',mkt:105},
+    {code:'PCOR',name:'Procore',mkt:105},
     // === 半导体扩展 ===
-    {code:'WOLF',name:'Wolfspeed',mkt:105},{code:'SITM',name:'SiTime',mkt:105},
-    {code:'ENTG',name:'Entegris',mkt:105},{code:'OLED',name:'Universal Display',mkt:105},
-    {code:'FORM',name:'FormFactor',mkt:105},{code:'ACL',name:'Atlas',mkt:105},
-    {code:'POET',name:'POET Technologies',mkt:105},{code:'LSCC',name:'Lattice',mkt:105},
-    // === 消费/餐饮扩展 ===
-    {code:'BMBL',name:'Bumble',mkt:105},{code:'MTCH',name:'Match Group',mkt:105},
-    {code:'W',name:'Wayfair',mkt:105},{code:'GRAB',name:'Grab',mkt:105},
-    {code:'SE',name:'Sea Limited',mkt:105},{code:'CPNG',name:'Coupang',mkt:105},
-    {code:'YETI',name:'Yeti',mkt:105},{code:'CROX',name:'Crocs',mkt:105},
-    {code:'DECK',name:'Deckers',mkt:105},{code:'DRI',name:'Darden Restaurants',mkt:106},
-    {code:'WING',name:'Wingstop',mkt:105},{code:'CAVA',name:'Cava',mkt:105},
-    {code:'BROS',name:'Dutch Bros',mkt:105},{code:'PZZA',name:'Papa John\'s',mkt:105},
-    {code:'BLDR',name:'Builders FirstSource',mkt:106},{code:'ODD',name:'ODDITY Tech',mkt:105},
-    // === 金融科技/地产科技扩展 ===
-    {code:'LMND',name:'Lemonade',mkt:105},{code:'ROOT',name:'Root Insurance',mkt:105},
-    {code:'OPEN',name:'Opendoor',mkt:105},{code:'RDFN',name:'Redfin',mkt:105},
-    {code:'ZG',name:'Zillow',mkt:106},{code:'COMP',name:'Compass',mkt:105},
-    {code:'GPN',name:'Global Payments',mkt:106},{code:'FIS',name:'FIS',mkt:106},
-    {code:'JKHY',name:'Jack Henry',mkt:106},{code:'EXLS',name:'ExlService',mkt:106},
-    {code:'GEN',name:'Gen Digital',mkt:106},{code:'VRSK',name:'Verisk',mkt:106},
-    // === 国防/航天/工业扩展 ===
-    {code:'HEI',name:'Heico',mkt:106},{code:'CW',name:'Curtiss-Wright',mkt:106},
-    {code:'TXT',name:'Textron',mkt:106},{code:'HII',name:'Huntington Ingalls',mkt:106},
-    {code:'KTOS',name:'Kratos Defense',mkt:106},{code:'RKLB',name:'Rocket Lab',mkt:105},
-    {code:'IRDM',name:'Iridium',mkt:106},{code:'ASTS',name:'AST SpaceMobile',mkt:105},
-    // === REITs扩展 ===
-    {code:'CCI',name:'Crown Castle',mkt:106},{code:'SBAC',name:'SBA Communications',mkt:106},
-    {code:'FR',name:'First Industrial',mkt:106},{code:'KRC',name:'Kilroy Realty',mkt:106},
-    {code:'BXP',name:'Boston Properties',mkt:106},{code:'DOC',name:'Healthpeak',mkt:106},
-    // === 安全/AI扩展 ===
-    {code:'S',name:'SentinelOne',mkt:105},{code:'TENB',name:'Tenable',mkt:105},
-    {code:'VRNS',name:'Varonis',mkt:105},{code:'RPD',name:'Rapid7',mkt:105},
-    {code:'CHKP',name:'Check Point',mkt:106},{code:'FFIV',name:'F5 Networks',mkt:106},
-    // === 其他热门 ===
-    {code:'LOGI',name:'罗技',mkt:106},{code:'NTNX',name:'Nutanix',mkt:105},
-    {code:'FFIE',name:'法拉第未来',mkt:106},{code:'JOBY',name:'Joby Aviation',mkt:105},
-    {code:'ACHR',name:'Archer Aviation',mkt:105},{code:'LUMN',name:'Lumen',mkt:106},
-    {code:'SOUN',name:'SoundHound AI',mkt:105},{code:'IONQ',name:'IonQ',mkt:105},
-    {code:'RGTI',name:'Rigetti Computing',mkt:105},{code:'QUBT',name:'Quantum Computing',mkt:105},
-    {code:'BBAI',name:'BigBear.ai',mkt:105},{code:'PRCT',name:'PROCEPT BioRobotics',mkt:105},
-    {code:'NEWR',name:'New Relic',mkt:105},
-    {code:'SUM',name:'Summit Materials',mkt:106},
-    // === 光通信/通信设备 ===
-    {code:'NOK',name:'诺基亚',mkt:106},{code:'ERIC',name:'爱立信',mkt:106},
-    {code:'CIEN',name:'Ciena',mkt:105},{code:'LITE',name:'Lumentum',mkt:105},
-    {code:'FN',name:'Fabrinet',mkt:105},{code:'AAOI',name:'Applied Optoelectronics',mkt:105},
-    {code:'IPGP',name:'IPG Photonics',mkt:105},{code:'COHR',name:'Coherent',mkt:105},
-    // === 热门半导体追加 ===
-    {code:'ALAB',name:'Astera Labs',mkt:105},{code:'SGH',name:'SMART Global',mkt:105},
-    {code:'SIMO',name:'慧荣科技',mkt:105},{code:'GFS',name:'格芯',mkt:105},
-    // === 应用软件（市值>$200亿）===
-    {code:'SAP',name:'SAP',mkt:106},{code:'ADP',name:'自动数据处理',mkt:105},
-    {code:'FI',name:'Fiserv',mkt:106},{code:'INFY',name:'Infosys',mkt:106},
-    {code:'ROP',name:'Roper Technologies',mkt:106},{code:'PAYX',name:'Paychex',mkt:105},
-    {code:'CTSH',name:'Cognizant',mkt:105},{code:'MSCI',name:'MSCI',mkt:106},
-    {code:'FICO',name:'Fair Isaac',mkt:106},{code:'PTC',name:'PTC',mkt:105},
+    {code:'TSM',name:'台积电',mkt:106},{code:'ASML',name:'ASML',mkt:105},
+    {code:'ARM',name:'ARM',mkt:105},{code:'MPWR',name:'Monolithic Power',mkt:105},
+    {code:'ALAB',name:'Astera Labs',mkt:105},
+    // === 硬件 / 服务器 ===
+    {code:'DELL',name:'戴尔',mkt:106},{code:'LOGI',name:'罗技',mkt:106},
+    // === 金融科技 ===
+    {code:'HOOD',name:'Robinhood',mkt:105},
+    // === 游戏 / 元宇宙 ===
+    {code:'RBLX',name:'Roblox',mkt:105},{code:'U',name:'Unity',mkt:105},
+    // === AI / 量子 / 太空热门科技 ===
+    {code:'IONQ',name:'IonQ',mkt:105},{code:'ASTS',name:'AST SpaceMobile',mkt:105},
+    {code:'RKLB',name:'Rocket Lab',mkt:105},
 ];
 
 // ===== 游戏状态 =====
@@ -550,7 +375,7 @@ async function newGame() {
         const total = result.klines.length;
         const historyCount = Math.min(HISTORY_DAYS, total - TRADING_DAYS);
         const totalNeeded = historyCount + TRADING_DAYS;
-        // 在近十年数据范围内随机选择起始位置
+        // 在近3年数据范围内随机选择起始位置
         const maxStart = Math.max(0, total - totalNeeded);
         const startIdx = maxStart > 0 ? Math.floor(Math.random() * (maxStart + 1)) : 0;
 
@@ -635,7 +460,7 @@ function updateStockHeader() {
         nameEl.textContent = '???';
         codeEl.textContent = '???';
     }
-    dsEl.textContent = '富途牛牛 本地数据';
+    dsEl.textContent = '富途牛牛 · 近3年数据';
     dsEl.className = 'data-badge real';
 }
 
@@ -696,7 +521,7 @@ async function skipStock() {
     const buyTrades = state.trades.filter(t => t.type === 'buy').length;
     const sellTrades = state.trades.filter(t => t.type === 'sell').length;
 
-    const dsLabel = '富途牛牛 本地数据';
+    const dsLabel = '富途牛牛 · 近3年数据';
     stockEl.innerHTML = `跳过: <strong>${state.stockName} (${state.stockCode})</strong><br>${firstDate} ~ ${lastDate} · ${dsLabel}`;
 
     summaryEl.innerHTML = `
@@ -1617,7 +1442,7 @@ function endGame(reason) {
         <div class="result-detail-item"><div class="label">最佳/最差</div><div class="val" style="font-size:13px">${bestReturn} / ${worstReturn}</div></div>
     `;
 
-    const dsLabel = '富途牛牛 本地数据';
+    const dsLabel = '富途牛牛 · 近3年数据';
     document.getElementById('resultStock').innerHTML = `交易股票: <strong>${state.stockName} (${state.stockCode})</strong><br>时间: ${firstDate} ~ ${lastDate} · ${dsLabel}`;
 
     const btnArea = document.getElementById('resultButtons');

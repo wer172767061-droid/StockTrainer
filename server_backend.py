@@ -47,7 +47,7 @@ def api_kline():
 
 @app.route('/api/stock_list')
 def api_stock_list():
-    """获取所有可用股票列表"""
+    """获取所有可用股票列表（含市值信息）"""
     index_path = os.path.join(DATA_DIR, '_index.json')
     if not os.path.exists(index_path):
         # 尝试从数据文件直接生成
@@ -62,16 +62,22 @@ def api_stock_list():
                         stock_list.append({
                             "code": code,
                             "name": d.get("name", ""),
-                            "days": d.get("count", 0)
+                            "days": d.get("count", 0),
+                            "avg_mkt_cap": d.get("avg_market_cap", 0)
                         })
                     except:
-                        stock_list.append({"code": code, "name": "", "days": 0})
+                        stock_list.append({"code": code, "name": "", "days": 0, "avg_mkt_cap": 0})
         return jsonify(stock_list)
 
     with open(index_path, 'r') as f:
         index = json.load(f)
     stock_list = [
-        {"code": k, "name": v.get("name", ""), "days": v.get("days", 0)}
+        {
+            "code": k,
+            "name": v.get("name", ""),
+            "days": v.get("days", 0),
+            "avg_mkt_cap": v.get("avg_mkt_cap", 0)
+        }
         for k, v in index.items()
     ]
     return jsonify(stock_list)
@@ -82,6 +88,7 @@ def api_health():
     """健康检查"""
     total_stocks = 0
     total_days = 0
+    total_market_cap = 0
     if os.path.exists(DATA_DIR):
         for f in os.listdir(DATA_DIR):
             if f.endswith('.json') and f != '_index.json':
@@ -90,13 +97,18 @@ def api_health():
                     with open(os.path.join(DATA_DIR, f), 'r') as fp:
                         d = json.load(fp)
                     total_days += d.get('count', 0)
+                    total_market_cap += d.get('avg_market_cap', 0)
                 except:
                     pass
 
+    avg_market_cap = total_market_cap / total_stocks if total_stocks > 0 else 0
     return jsonify({
         "status": "ok",
         "total_stocks": total_stocks,
-        "total_kline_days": total_days
+        "total_kline_days": total_days,
+        "avg_market_cap_all": round(avg_market_cap, 2),
+        "data_source": "futu_opend",
+        "data_range": "3years"
     })
 
 
