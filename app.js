@@ -28,8 +28,8 @@ const US_STOCKS = [
     {code:'KEYS',name:'Keysight',mkt:106},{code:'TER',name:'Teradyne',mkt:106},
     {code:'STX',name:'希捷',mkt:106},{code:'WDC',name:'西部数据',mkt:106},
     {code:'NTAP',name:'NetApp',mkt:106},{code:'HPQ',name:'惠普',mkt:106},
-    {code:'HPE',name:'慧与',mkt:106},{code:'ANSS',name:'ANSYS',mkt:105},
-    {code:'FFIV',name:'F5',mkt:106},{code:'CHKP',name:'Check Point',mkt:106},
+    {code:'HPE',name:'慧与',mkt:106},{code:'FFIV',name:'F5',mkt:106},
+    {code:'CHKP',name:'Check Point',mkt:106},
     {code:'PANW',name:'Palo Alto',mkt:105},{code:'FTNT',name:'Fortinet',mkt:105},
     {code:'SNPS',name:'Synopsys',mkt:105},{code:'CDNS',name:'Cadence',mkt:105},
     {code:'WDAY',name:'Workday',mkt:105},
@@ -38,7 +38,6 @@ const US_STOCKS = [
     {code:'UBER',name:'Uber',mkt:105},{code:'ABNB',name:'Airbnb',mkt:105},
     {code:'SHOP',name:'Shopify',mkt:105},{code:'PYPL',name:'PayPal',mkt:105},
     {code:'DASH',name:'DoorDash',mkt:105},{code:'ROKU',name:'Roku',mkt:105},
-    {code:'PINS',name:'Pinterest',mkt:105},{code:'SNAP',name:'Snap',mkt:105},
     {code:'SPOT',name:'Spotify',mkt:105},
     // === 云计算 / SaaS ===
     {code:'SNOW',name:'Snowflake',mkt:105},{code:'DDOG',name:'Datadog',mkt:105},
