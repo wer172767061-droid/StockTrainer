@@ -36,7 +36,7 @@ TECH_STOCKS = [
 
     # === S&P 500 信息技术 ===
     "IBM", "ACN", "CTSH", "IT", "KEYS", "TER", "STX", "WDC", "NTAP",
-    "HPQ", "HPE", "FFIV", "CHKP",
+    "HPQ", "HPE", "FFIV",
     "PANW", "FTNT", "SNPS", "CDNS", "WDAY",
 
     # === 网络平台 / 互联网科技 ===
@@ -45,23 +45,23 @@ TECH_STOCKS = [
 
     # === 云计算 / SaaS ===
     "SNOW", "DDOG", "TEAM", "MDB", "OKTA", "CRWD", "PLTR", "NET",
-    "GTLB", "HUBS", "BILL", "MNDY", "ZS", "TTD", "APP", "NTNX",
-    "ESTC", "FROG", "PD", "DOCN", "WIX", "GDDY", "PCOR",
+    "GTLB", "BILL", "ZS", "APP",
+    "ESTC",
 
     # === 半导体扩展 ===
     "TSM", "ASML", "ARM", "MPWR", "ALAB",
 
     # === 硬件 / 服务器 ===
-    "DELL", "LOGI",
+    "DELL",
 
     # === 金融科技（非传统金融）===
     "HOOD",
 
     # === 游戏 / 元宇宙 ===
-    "RBLX", "U",
+    "RBLX",
 
     # === AI / 量子 / 太空热门科技 ===
-    "IONQ", "ASTS", "RKLB",
+    "ASTS", "RKLB",
 ]
 
 # 去重

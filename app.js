@@ -29,7 +29,6 @@ const US_STOCKS = [
     {code:'STX',name:'希捷',mkt:106},{code:'WDC',name:'西部数据',mkt:106},
     {code:'NTAP',name:'NetApp',mkt:106},{code:'HPQ',name:'惠普',mkt:106},
     {code:'HPE',name:'慧与',mkt:106},{code:'FFIV',name:'F5',mkt:106},
-    {code:'CHKP',name:'Check Point',mkt:106},
     {code:'PANW',name:'Palo Alto',mkt:105},{code:'FTNT',name:'Fortinet',mkt:105},
     {code:'SNPS',name:'Synopsys',mkt:105},{code:'CDNS',name:'Cadence',mkt:105},
     {code:'WDAY',name:'Workday',mkt:105},
@@ -44,26 +43,23 @@ const US_STOCKS = [
     {code:'TEAM',name:'Atlassian',mkt:105},{code:'MDB',name:'MongoDB',mkt:105},
     {code:'OKTA',name:'Okta',mkt:105},{code:'CRWD',name:'CrowdStrike',mkt:105},
     {code:'PLTR',name:'Palantir',mkt:105},{code:'NET',name:'Cloudflare',mkt:105},
-    {code:'GTLB',name:'GitLab',mkt:105},{code:'HUBS',name:'HubSpot',mkt:105},
-    {code:'BILL',name:'Bill.com',mkt:105},{code:'MNDY',name:'Monday.com',mkt:105},
-    {code:'ZS',name:'Zscaler',mkt:105},{code:'TTD',name:'Trade Desk',mkt:105},
-    {code:'APP',name:'AppLovin',mkt:105},{code:'NTNX',name:'Nutanix',mkt:105},
-    {code:'ESTC',name:'Elastic',mkt:105},{code:'FROG',name:'JFrog',mkt:105},
-    {code:'PD',name:'PagerDuty',mkt:105},{code:'DOCN',name:'DigitalOcean',mkt:105},
-    {code:'WIX',name:'Wix',mkt:105},{code:'GDDY',name:'GoDaddy',mkt:105},
-    {code:'PCOR',name:'Procore',mkt:105},
+    {code:'GTLB',name:'GitLab',mkt:105},
+    {code:'BILL',name:'Bill.com',mkt:105},
+    {code:'ZS',name:'Zscaler',mkt:105},
+    {code:'APP',name:'AppLovin',mkt:105},
+    {code:'ESTC',name:'Elastic',mkt:105},
     // === 半导体扩展 ===
     {code:'TSM',name:'台积电',mkt:106},{code:'ASML',name:'ASML',mkt:105},
     {code:'ARM',name:'ARM',mkt:105},{code:'MPWR',name:'Monolithic Power',mkt:105},
     {code:'ALAB',name:'Astera Labs',mkt:105},
     // === 硬件 / 服务器 ===
-    {code:'DELL',name:'戴尔',mkt:106},{code:'LOGI',name:'罗技',mkt:106},
+    {code:'DELL',name:'戴尔',mkt:106},
     // === 金融科技 ===
     {code:'HOOD',name:'Robinhood',mkt:105},
     // === 游戏 / 元宇宙 ===
-    {code:'RBLX',name:'Roblox',mkt:105},{code:'U',name:'Unity',mkt:105},
+    {code:'RBLX',name:'Roblox',mkt:105},
     // === AI / 量子 / 太空热门科技 ===
-    {code:'IONQ',name:'IonQ',mkt:105},{code:'ASTS',name:'AST SpaceMobile',mkt:105},
+    {code:'ASTS',name:'AST SpaceMobile',mkt:105},
     {code:'RKLB',name:'Rocket Lab',mkt:105},
 ];
 
