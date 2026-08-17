@@ -49,7 +49,7 @@ const US_STOCKS = [
     {code:'APP',name:'AppLovin',mkt:105},
     {code:'ESTC',name:'Elastic',mkt:105},
     // === 半导体扩展 ===
-    {code:'TSM',name:'台积电',mkt:106},{code:'ASML',name:'ASML',mkt:105},
+    {code:'TSM',name:'台积电',mkt:106},
     {code:'ARM',name:'ARM',mkt:105},{code:'MPWR',name:'Monolithic Power',mkt:105},
     {code:'ALAB',name:'Astera Labs',mkt:105},
     // === 硬件 / 服务器 ===
@@ -59,7 +59,6 @@ const US_STOCKS = [
     // === 游戏 / 元宇宙 ===
     {code:'RBLX',name:'Roblox',mkt:105},
     // === AI / 量子 / 太空热门科技 ===
-    {code:'ASTS',name:'AST SpaceMobile',mkt:105},
     {code:'RKLB',name:'Rocket Lab',mkt:105},
 ];
 

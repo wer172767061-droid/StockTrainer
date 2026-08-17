@@ -49,7 +49,7 @@ TECH_STOCKS = [
     "ESTC",
 
     # === 半导体扩展 ===
-    "TSM", "ASML", "ARM", "MPWR", "ALAB",
+    "TSM", "ARM", "MPWR", "ALAB",
 
     # === 硬件 / 服务器 ===
     "DELL",
@@ -61,7 +61,7 @@ TECH_STOCKS = [
     "RBLX",
 
     # === AI / 量子 / 太空热门科技 ===
-    "ASTS", "RKLB",
+    "RKLB",
 ]
 
 # 去重
