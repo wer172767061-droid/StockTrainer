@@ -102,23 +102,23 @@
         <svg class="draw-overlay" id="drawOverlay"></svg>
         <!-- 画图提示 -->
         <div class="draw-indicator" id="drawIndicator" style="display:none"></div>
-        <!-- 画图工具栏 -->
+        <!-- 选中画线操作条 -->
+        <div class="draw-sel-bar" id="drawSelBar" style="display:none">
+            <button class="dsb-btn" onclick="openDrawSettings()">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+                设置
+            </button>
+            <button class="dsb-btn dsb-danger" onclick="deleteSelectedDrawing()">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+                删除
+            </button>
+        </div>
+        <!-- 画图工具栏（富途风格，JS生成图标按钮） -->
         <div class="draw-toolbar" id="drawToolbar" style="display:none">
-            <button class="dt-btn active" data-tool="trendline" onclick="selectDrawTool('trendline')">趋势线</button>
-            <button class="dt-btn" data-tool="straightline" onclick="selectDrawTool('straightline')">直线</button>
-            <button class="dt-btn" data-tool="horizontalline" onclick="selectDrawTool('horizontalline')">水平线</button>
-            <button class="dt-btn" data-tool="ray" onclick="selectDrawTool('ray')">射线</button>
-            <button class="dt-btn dt-magnet" id="magnetToggle" onclick="toggleMagnet()">磁吸</button>
-            <button class="dt-btn" data-tool="rectangle" onclick="selectDrawTool('rectangle')">矩形</button>
-            <button class="dt-btn" data-tool="arrow" onclick="selectDrawTool('arrow')">箭头</button>
-            <button class="dt-btn" data-tool="fibonacci" onclick="selectDrawTool('fibonacci')">黄金分割</button>
-            <button class="dt-btn" data-tool="brush" onclick="selectDrawTool('brush')">画笔</button>
-            <button class="dt-btn dt-action" onclick="undoDrawing()">撤销</button>
-            <button class="dt-btn dt-action" onclick="clearDrawings()">清除</button>
-            <button class="dt-btn dt-close-btn" onclick="toggleDrawMode()">&#10005;</button>
+            <div class="dt-scroll" id="dtTools"></div>
         </div>
         <!-- 画图开关 -->
-        <button class="draw-toggle" id="drawToggle" onclick="toggleDrawMode()">&#9999;&#65039;</button>
+        <button class="draw-toggle" id="drawToggle" onclick="toggleDrawMode()">&#9998;</button>
         <!-- 左侧止损浮动面板 -->
         <div class="sl-floating-panel" id="slFloatingPanel" style="display:none">
             <div class="sl-panel-header" id="slPanelHeader">
@@ -230,6 +230,30 @@
             <div class="sl-actions">
                 <button class="btn-sl-cancel" id="btnSlCancel" onclick="cancelStopLoss()" style="display:none">取消止损</button>
                 <button class="btn-sl-set" onclick="setStopLoss()">确认设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 画线设置底部弹窗（富途样式） -->
+    <div class="ds-overlay" id="drawSettingsOverlay" style="display:none" onclick="closeDrawSettings()">
+        <div class="ds-sheet" onclick="event.stopPropagation()">
+            <div class="ds-grabber"></div>
+            <div class="ds-title">画线设置</div>
+            <div class="ds-group">
+                <div class="ds-label">颜色</div>
+                <div class="ds-colors" id="dsColors"></div>
+            </div>
+            <div class="ds-group">
+                <div class="ds-label">线宽</div>
+                <div class="ds-opts" id="dsWidths"></div>
+            </div>
+            <div class="ds-group">
+                <div class="ds-label">线型</div>
+                <div class="ds-opts" id="dsStyles"></div>
+            </div>
+            <div class="ds-actions">
+                <button class="ds-btn ds-delete" onclick="deleteSelectedDrawing();closeDrawSettings()">删除画线</button>
+                <button class="ds-btn ds-ok" onclick="closeDrawSettings()">完成</button>
             </div>
         </div>
     </div>

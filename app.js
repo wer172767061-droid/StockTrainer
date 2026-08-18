@@ -97,23 +97,16 @@ let stopLossPriceLine = null;
 // ===== 划线画图系统 =====
 const SVG_NS = 'http://www.w3.org/2000/svg';
 let drawingMode = false;
-let activeTool = null;
-let drawings = [];
-let currentDrawing = null;
-let drawPointCount = 0;
-let brushPath = [];
-let isDrawing = false;
-let magnetMode = true; // 磁吸默认开启
-const DRAW_COLORS = {
-    trendline: '#e6edf3',
-    straightline: '#22d3ee',
-    horizontalline: '#fbbf24',
-    ray: '#60a5fa',
-    rectangle: '#a78bfa',
-    arrow: '#f87171',
-    fibonacci: '#2dd4bf',
-    brush: '#e6edf3',
-};
+let activeTool = 'select';   // 'select' 或具体工具名
+let drawings = [];           // {id, type, points:[{time,price}], style:{color,width,dash}, text?}
+let selectedId = null;
+let magnetMode = true;       // 磁吸默认开启（吸附OHLC）
+let nextDrawId = 1;
+let drawGesture = null;      // {mode:'draw'|'brush'|'handle'|'move', ...}
+let pendingDrawing = null;   // 绘制中 / 等待后续点的画线
+let pendingChannel = false;  // 平行通道等待第3个点
+
+const FUTU_COLORS = ['#F23645', '#0ECB81', '#2F6BFF', '#FF9800', '#AB47BC', '#00BCD4', '#FFD60A', '#E6EDF3'];
 const FIB_LEVELS = [
     { level: 0,     pct: '0.0%' },
     { level: 0.236, pct: '23.6%' },
@@ -122,6 +115,29 @@ const FIB_LEVELS = [
     { level: 0.618, pct: '61.8%' },
     { level: 0.786, pct: '78.6%' },
     { level: 1.0,   pct: '100.0%' },
+];
+const DASH_MAP = { solid: null, dashed: '6,4', dotted: '1.5,3.5' };
+
+// 工具栏图标（SVG, 24x24）
+const DT_ICON = (inner) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const DRAW_TOOLS = [
+    { id: 'select',         name: '选择',   icon: DT_ICON('<path d="M6 3l12 9.5-6.5.8L9 20z" fill="currentColor" stroke="none"/>') },
+    { id: 'trendline',      name: '趋势线', icon: DT_ICON('<line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="1.6" fill="currentColor" stroke="none"/><circle cx="20" cy="4" r="1.6" fill="currentColor" stroke="none"/>') },
+    { id: 'horizontalline', name: '水平线', icon: DT_ICON('<line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>') },
+    { id: 'verticalline',   name: '垂直线', icon: DT_ICON('<line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>') },
+    { id: 'ray',            name: '射线',   icon: DT_ICON('<circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><line x1="8" y1="12" x2="21" y2="12"/>') },
+    { id: 'straightline',   name: '直线',   icon: DT_ICON('<line x1="3" y1="20" x2="21" y2="4"/>') },
+    { id: 'rectangle',      name: '矩形',   icon: DT_ICON('<rect x="4" y="7" width="16" height="10" rx="1"/>') },
+    { id: 'channel',        name: '通道',   icon: DT_ICON('<line x1="3" y1="18" x2="17" y2="7"/><line x1="7" y1="21" x2="21" y2="10"/>') },
+    { id: 'arrow',          name: '箭头',   icon: DT_ICON('<line x1="5" y1="19" x2="19" y2="5"/><path d="M12 5h7v7"/>') },
+    { id: 'fibonacci',      name: '黄金分割', icon: DT_ICON('<line x1="5" y1="5" x2="19" y2="5"/><line x1="5" y1="10" x2="19" y2="10"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="5" y1="20" x2="19" y2="20"/>') },
+    { id: 'brush',          name: '画笔',   icon: DT_ICON('<path d="M4 18c3 1.5 5-4 8-3s2 5 8 2"/>') },
+    { id: 'text',           name: '文字',   icon: DT_ICON('<path d="M5 7V4h14v3M12 4v16M9 20h6"/>') },
+];
+const DT_ACTIONS = [
+    { id: 'magnet', name: '磁吸', icon: DT_ICON('<path d="M6 3v8a6 6 0 0 0 12 0V3"/><path d="M6 3h4v8a2 2 0 0 0 4 0V3h4"/>'), act: 'toggleMagnet()' },
+    { id: 'undo',   name: '撤销', icon: DT_ICON('<path d="M8 5L4 9l4 4"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'), act: 'undoDrawing()' },
+    { id: 'clear',  name: '清空', icon: DT_ICON('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'), act: 'clearDrawings()' },
 ];
 
 // ===== 数据层：本地后端 API（富途牛牛数据）=====
@@ -400,7 +416,7 @@ async function newGame() {
         state.stockMkt = stock.mkt;
         state.earningsEvents = [];
         state.stopLossPrice = null;
-        drawings = []; currentDrawing = null; drawPointCount = 0; brushPath = [];
+        loadDrawingsForStock();
 
         state.dateToLabelMap = {};
         state.historyKlines.forEach((k, i) => { state.dateToLabelMap[k.date] = `H${i+1}`; });
@@ -717,7 +733,7 @@ function initChart() {
 
     // 画图联动：图表滚动/缩放时重新渲染画线 + 止损标签
     chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-        if (drawings.length > 0 || currentDrawing) renderDrawings();
+        if (drawings.length > 0 || pendingDrawing) renderDrawings();
         if (state.stopLossPrice !== null && state.shares !== 0) updateStopLossLine();
     });
 
@@ -1493,116 +1509,150 @@ function showLoading(show) {
     document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
 }
 
-// ===== 划线画图系统 =====
+// ===== 划线画图系统（富途牛牛风格）=====
+
 function toggleDrawMode() {
     drawingMode = !drawingMode;
     const overlay = document.getElementById('drawOverlay');
     const toolbar = document.getElementById('drawToolbar');
     const toggleBtn = document.getElementById('drawToggle');
-    const indicator = document.getElementById('drawIndicator');
 
     if (drawingMode) {
         overlay.style.pointerEvents = 'auto';
-        toolbar.style.display = 'flex';
+        toolbar.style.display = 'block';
         toggleBtn.classList.add('active');
         toggleBtn.innerHTML = '&#10005;';
-        const magnetBtn = document.getElementById('magnetToggle');
-        if (magnetBtn) magnetBtn.classList.toggle('active', magnetMode);
         if (chart) chart.applyOptions({ handleScroll: false, handleScale: false });
-        selectDrawTool('trendline');
+        buildDrawToolbar();
+        selectDrawTool('select');
         renderDrawings();
     } else {
         overlay.style.pointerEvents = 'none';
         toolbar.style.display = 'none';
         toggleBtn.classList.remove('active');
-        toggleBtn.innerHTML = '&#9999;&#65039;';
-        indicator.style.display = 'none';
+        toggleBtn.innerHTML = '&#9998;';
         if (chart) chart.applyOptions({ handleScroll: true, handleScale: true });
-        activeTool = null;
-        currentDrawing = null;
-        drawPointCount = 0;
+        pendingDrawing = null;
+        drawGesture = null;
+        pendingChannel = false;
+        selectDrawing(null);
+        closeDrawSettings();
         renderDrawings();
     }
 }
 
+// ---------- 工具栏 ----------
+function buildDrawToolbar() {
+    const wrap = document.getElementById('dtTools');
+    if (!wrap) return;
+    let html = '';
+    for (const t of DRAW_TOOLS) {
+        html += `<button class="dt-btn" data-tool="${t.id}" onclick="selectDrawTool('${t.id}')">
+            <span class="dt-ic">${t.icon}</span><span class="dt-lb">${t.name}</span></button>`;
+    }
+    html += '<span class="dt-sep"></span>';
+    for (const a of DT_ACTIONS) {
+        html += `<button class="dt-btn dt-act" id="${a.id === 'magnet' ? 'magnetToggle' : ''}" onclick="${a.act}">
+            <span class="dt-ic">${a.icon}</span><span class="dt-lb">${a.name}</span></button>`;
+    }
+    wrap.innerHTML = html;
+    refreshToolbarActive();
+}
+
+function refreshToolbarActive() {
+    document.querySelectorAll('#dtTools .dt-btn[data-tool]').forEach(b => {
+        b.classList.toggle('active', b.dataset.tool === activeTool);
+    });
+    const m = document.getElementById('magnetToggle');
+    if (m) m.classList.toggle('active', magnetMode);
+}
+
 function selectDrawTool(tool) {
     activeTool = tool;
-    currentDrawing = null;
-    drawPointCount = 0;
-    brushPath = [];
-
-    document.querySelectorAll('.dt-btn[data-tool]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tool === tool);
-    });
+    pendingDrawing = null;
+    drawGesture = null;
+    pendingChannel = false;
+    if (tool !== 'select') selectDrawing(null);
+    closeDrawSettings();
+    refreshToolbarActive();
     updateDrawIndicator();
     renderDrawings();
 }
 
 function toggleMagnet() {
     magnetMode = !magnetMode;
-    const btn = document.getElementById('magnetToggle');
-    if (btn) btn.classList.toggle('active', magnetMode);
-    showToast(magnetMode ? '磁吸已开启' : '磁吸已关闭', 'info');
-}
-
-// 磁吸：找到鼠标位置最近的K线，吸附到其最高或最低点
-function snapToCandle(x, y) {
-    if (!magnetMode || !chart || !candleSeries) return null;
-    const time = chart.timeScale().coordinateToTime(x);
-    if (time === null || time === undefined) return null;
-    let timeStr;
-    if (typeof time === 'string') timeStr = time;
-    else if (time && time.year) timeStr = `${time.year}-${String(time.month).padStart(2,'0')}-${String(time.day).padStart(2,'0')}`;
-    else return null;
-
-    const allKlines = getAllKlines();
-    const kline = allKlines.find(k => k.date === timeStr);
-    if (!kline) return null;
-
-    const highY = candleSeries.priceToCoordinate(kline.high);
-    const lowY = candleSeries.priceToCoordinate(kline.low);
-    if (highY === null || lowY === null) return null;
-
-    const distHigh = Math.abs(y - highY);
-    const distLow = Math.abs(y - lowY);
-    const snapThreshold = 20; // 像素吸附范围
-    if (distHigh < distLow && distHigh < snapThreshold) {
-        return { time: timeStr, price: kline.high };
-    } else if (distLow < snapThreshold) {
-        return { time: timeStr, price: kline.low };
-    }
-    return null;
+    refreshToolbarActive();
+    showToast(magnetMode ? '磁吸已开启（吸附K线开高低收）' : '磁吸已关闭', 'info');
 }
 
 function updateDrawIndicator() {
-    const indicator = document.getElementById('drawIndicator');
-    if (!drawingMode || !activeTool) { indicator.style.display = 'none'; return; }
-    const hints = drawPointCount === 1 ? {
-        trendline: '点击设置趋势线终点',
-        straightline: '点击设置直线终点',
-        ray: '点击设置射线方向点',
-        rectangle: '点击设置矩形对角点',
-        arrow: '点击设置箭头终点',
-        fibonacci: '点击设置黄金分割终点',
-    } : {
-        trendline: '点击设置趋势线起点',
-        straightline: '点击设置直线起点',
-        horizontalline: '点击图表放置水平线',
-        ray: '点击设置射线起点',
-        rectangle: '点击设置矩形第一个角',
-        arrow: '点击设置箭头起点',
-        fibonacci: '点击设置黄金分割起点',
-        brush: '触摸并拖动绘制',
-    };
-    indicator.textContent = hints[activeTool] || '';
-    indicator.style.display = 'block';
+    const el = document.getElementById('drawIndicator');
+    if (!el) return;
+    if (!drawingMode) { el.style.display = 'none'; return; }
+    if (activeTool === 'select') {
+        el.textContent = selectedId ? '已选中：拖动手柄调整端点，拖动线体整体移动' : '点击画线可选中编辑，点空白处取消';
+        el.style.display = 'block';
+        return;
+    }
+    let hint = '';
+    if (pendingChannel) hint = '点击设置平行通道的偏移点（第3点）';
+    else {
+        const hints = {
+            trendline: pendingDrawing ? '移动预览，点击/松手确定终点' : '按住拖动绘制趋势线（或点击两点）',
+            straightline: pendingDrawing ? '移动预览，点击/松手确定终点' : '按住拖动绘制直线（两端无限延伸）',
+            horizontalline: '点击图表放置水平线',
+            verticalline: '点击图表放置垂直线',
+            ray: pendingDrawing ? '移动预览，点击/松手确定方向' : '按住拖动绘制射线',
+            rectangle: pendingDrawing ? '移动预览，点击/松手确定对角点' : '按住拖动绘制矩形',
+            channel: pendingDrawing ? '移动预览，点击/松手确定基准线，再点第3点定偏移' : '按住拖动绘制通道基准线',
+            arrow: pendingDrawing ? '移动预览，点击/松手确定终点' : '按住拖动绘制箭头',
+            fibonacci: pendingDrawing ? '移动预览，点击/松手确定终点' : '按住拖动绘制黄金分割',
+            brush: '按住拖动自由绘制',
+            text: '点击图表放置文字',
+        };
+        hint = hints[activeTool] || '';
+    }
+    el.textContent = hint;
+    el.style.display = 'block';
 }
 
+// ---------- 持久化（按股票保存） ----------
+function drawingsKey() { return 'stDrawings_' + (state.stockCode || ''); }
+
+function saveDrawingsForStock() {
+    if (!state.stockCode) return;
+    try { localStorage.setItem(drawingsKey(), JSON.stringify(drawings)); } catch (e) {}
+}
+
+function loadDrawingsForStock() {
+    selectedId = null;
+    pendingDrawing = null;
+    drawGesture = null;
+    pendingChannel = false;
+    drawings = [];
+    if (!state.stockCode) return;
+    try {
+        const raw = localStorage.getItem(drawingsKey());
+        if (raw) {
+            drawings = JSON.parse(raw) || [];
+            nextDrawId = drawings.reduce((m, d) => Math.max(m, d.id || 0), 0) + 1;
+        }
+    } catch (e) { drawings = []; }
+    updateDrawSelBar();
+}
+
+// ---------- 坐标与磁吸 ----------
 function getDrawPos(evt) {
     const container = document.getElementById('chartContainer');
     const rect = container.getBoundingClientRect();
-    const touch = evt.touches ? (evt.touches[0] || evt.changedTouches[0]) : evt;
-    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    const t = evt.touches ? (evt.touches[0] || evt.changedTouches[0]) : evt;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+}
+
+function timeToStr(time) {
+    if (typeof time === 'string') return time;
+    if (time && time.year) return `${time.year}-${String(time.month).padStart(2,'0')}-${String(time.day).padStart(2,'0')}`;
+    return null;
 }
 
 function screenToData(x, y) {
@@ -1610,10 +1660,8 @@ function screenToData(x, y) {
     const time = chart.timeScale().coordinateToTime(x);
     const price = candleSeries.coordinateToPrice(y);
     if (time === null || time === undefined || price === null || price === undefined) return null;
-    let timeStr;
-    if (typeof time === 'string') timeStr = time;
-    else if (time && time.year) timeStr = `${time.year}-${String(time.month).padStart(2,'0')}-${String(time.day).padStart(2,'0')}`;
-    else return null;
+    const timeStr = timeToStr(time);
+    if (!timeStr) return null;
     return { time: timeStr, price: price };
 }
 
@@ -1625,103 +1673,495 @@ function dataToScreen(time, price) {
     return { x, y };
 }
 
-function initDrawOverlay() {
-    const overlay = document.getElementById('drawOverlay');
-    if (!overlay) return;
-    overlay.addEventListener('touchstart', handleDrawStart, { passive: false });
-    overlay.addEventListener('touchmove', handleDrawMove, { passive: false });
-    overlay.addEventListener('touchend', handleDrawEnd, { passive: false });
-    overlay.addEventListener('mousedown', handleDrawStart);
-    overlay.addEventListener('mousemove', handleDrawMove);
-    overlay.addEventListener('mouseup', handleDrawEnd);
-    overlay.addEventListener('mouseleave', handleDrawEnd);
+// K线索引缓存（date -> {k, i}）
+let _kMapCache = null, _kMapKey = '';
+function getKlineMap() {
+    const all = getAllKlines();
+    const key = (state.stockCode || '') + ':' + all.length + ':' + (all.length ? all[all.length - 1].date : '');
+    if (_kMapCache && _kMapKey === key) return _kMapCache;
+    const m = {};
+    all.forEach((k, i) => { m[k.date] = { k, i }; });
+    _kMapCache = m; _kMapKey = key;
+    return m;
 }
 
-function handleDrawStart(evt) {
-    if (!drawingMode || !activeTool) return;
-    evt.preventDefault();
-    const pos = getDrawPos(evt);
-    const snapped = snapToCandle(pos.x, pos.y);
-    const data = snapped || screenToData(pos.x, pos.y);
-    if (!data) return;
-
-    if (activeTool === 'brush') {
-        isDrawing = true;
-        brushPath = [data];
-        currentDrawing = { type: 'brush', points: [data], color: DRAW_COLORS.brush };
-        renderDrawings();
-    } else if (activeTool === 'horizontalline') {
-        drawings.push({ type: 'horizontalline', points: [data], color: DRAW_COLORS.horizontalline });
-        renderDrawings();
-    } else {
-        if (drawPointCount === 0) {
-            currentDrawing = { type: activeTool, points: [data], color: DRAW_COLORS[activeTool] };
-            drawPointCount = 1;
-        } else if (drawPointCount === 1) {
-            currentDrawing.points.push(data);
-            drawings.push(currentDrawing);
-            currentDrawing = null;
-            drawPointCount = 0;
-        }
-        updateDrawIndicator();
-        renderDrawings();
+// 磁吸：吸附到最近K线的开/高/低/收
+function snapPoint(x, y) {
+    if (!magnetMode || !chart || !candleSeries) return null;
+    const time = chart.timeScale().coordinateToTime(x);
+    const timeStr = timeToStr(time);
+    if (!timeStr) return null;
+    const entry = getKlineMap()[timeStr];
+    if (!entry) return null;
+    const k = entry.k;
+    let best = null, bestD = 20;
+    for (const v of [k.open, k.high, k.low, k.close]) {
+        const cy = candleSeries.priceToCoordinate(v);
+        if (cy === null || cy === undefined) continue;
+        const d = Math.abs(cy - y);
+        if (d < bestD) { bestD = d; best = v; }
     }
+    return best === null ? null : { time: timeStr, price: best };
 }
 
-function handleDrawMove(evt) {
-    if (!drawingMode || !activeTool) return;
-    if (activeTool === 'brush' && isDrawing) {
-        evt.preventDefault();
-        const pos = getDrawPos(evt);
-        const snapped = snapToCandle(pos.x, pos.y);
-        const data = snapped || screenToData(pos.x, pos.y);
-        if (data) {
-            brushPath.push(data);
-            currentDrawing.points = brushPath;
-            renderDrawings();
-        }
-    } else if (drawPointCount === 1 && currentDrawing) {
-        evt.preventDefault();
-        const pos = getDrawPos(evt);
-        const snapped = snapToCandle(pos.x, pos.y);
-        const data = snapped || screenToData(pos.x, pos.y);
-        if (data) {
-            currentDrawing.points = [currentDrawing.points[0], data];
-            renderDrawings();
-        }
-    }
+function snapOrData(pos) {
+    return snapPoint(pos.x, pos.y) || screenToData(pos.x, pos.y);
 }
 
-function handleDrawEnd(evt) {
-    if (!drawingMode || !activeTool) return;
-    if (activeTool === 'brush' && isDrawing) {
-        if (evt.preventDefault) evt.preventDefault();
-        isDrawing = false;
-        if (brushPath.length > 1) {
-            drawings.push({ type: 'brush', points: [...brushPath], color: DRAW_COLORS.brush });
-        }
-        brushPath = [];
-        currentDrawing = null;
-        renderDrawings();
-    }
+// ---------- 画线数据 ----------
+function getDrawing(id) { return drawings.find(d => d.id === id) || null; }
+
+function defaultToolColor(t) {
+    if (t === 'horizontalline') return '#F23645';
+    if (t === 'fibonacci') return '#FFD60A';
+    if (t === 'rectangle' || t === 'channel') return '#AB47BC';
+    return '#2F6BFF';
+}
+
+function makeDrawing(type, points, extra) {
+    return Object.assign({
+        id: nextDrawId++,
+        type,
+        points,
+        style: { color: defaultToolColor(type), width: 1.5, dash: 'solid' },
+    }, extra || {});
+}
+
+function commitDrawing(d) {
+    drawings.push(d);
+    pendingDrawing = null;
+    drawGesture = null;
+    pendingChannel = false;
+    selectedId = d.id;
+    saveDrawingsForStock();
+    updateDrawSelBar();
+    updateDrawIndicator();
+    renderDrawings();
+}
+
+function selectDrawing(id) {
+    selectedId = id;
+    updateDrawSelBar();
+    updateDrawIndicator();
+    renderDrawings();
+}
+
+function updateDrawSelBar() {
+    const bar = document.getElementById('drawSelBar');
+    if (!bar) return;
+    bar.style.display = (selectedId && drawingMode) ? 'flex' : 'none';
+}
+
+function deleteSelectedDrawing() {
+    if (selectedId === null) { showToast('请先选中一条画线', 'info'); return; }
+    drawings = drawings.filter(d => d.id !== selectedId);
+    selectedId = null;
+    pendingDrawing = null;
+    pendingChannel = false;
+    saveDrawingsForStock();
+    updateDrawSelBar();
+    updateDrawIndicator();
+    renderDrawings();
+    showToast('已删除画线', 'info');
 }
 
 function undoDrawing() {
+    if (pendingDrawing) { pendingDrawing = null; pendingChannel = false; drawGesture = null; renderDrawings(); updateDrawIndicator(); return; }
     if (drawings.length === 0) { showToast('没有可撤销的画线', 'info'); return; }
-    drawings.pop();
-    currentDrawing = null;
-    drawPointCount = 0;
+    const removed = drawings.pop();
+    if (selectedId === removed.id) { selectedId = null; updateDrawSelBar(); }
+    saveDrawingsForStock();
     renderDrawings();
     updateDrawIndicator();
 }
 
 function clearDrawings() {
-    if (drawings.length === 0 && !currentDrawing) { showToast('没有画线可清除', 'info'); return; }
+    if (drawings.length === 0 && !pendingDrawing) { showToast('没有画线可清除', 'info'); return; }
     drawings = [];
-    currentDrawing = null;
-    drawPointCount = 0;
+    pendingDrawing = null;
+    pendingChannel = false;
+    drawGesture = null;
+    selectedId = null;
+    saveDrawingsForStock();
+    updateDrawSelBar();
     renderDrawings();
     updateDrawIndicator();
+    showToast('已清空全部画线', 'info');
+}
+
+// ---------- 设置面板 ----------
+function openDrawSettings() {
+    const d = getDrawing(selectedId);
+    if (!d) return;
+    const colorsEl = document.getElementById('dsColors');
+    const widthsEl = document.getElementById('dsWidths');
+    const stylesEl = document.getElementById('dsStyles');
+    if (!colorsEl) return;
+
+    colorsEl.innerHTML = FUTU_COLORS.map(c =>
+        `<button class="ds-color ${d.style.color.toUpperCase() === c.toUpperCase() ? 'active' : ''}" style="background:${c}" onclick="setDrawStyle('color','${c}')"></button>`).join('');
+
+    widthsEl.innerHTML = [1, 1.5, 2.5].map(w =>
+        `<button class="ds-opt ${d.style.width === w ? 'active' : ''}" onclick="setDrawStyle('width',${w})">
+            <span class="ds-line" style="height:${w + 0.5}px;background:var(--text-primary)"></span></button>`).join('');
+
+    const styleNames = { solid: '实线', dashed: '虚线', dotted: '点线' };
+    stylesEl.innerHTML = Object.keys(DASH_MAP).map(s =>
+        `<button class="ds-opt ${d.style.dash === s ? 'active' : ''}" onclick="setDrawStyle('dash','${s}')">${styleNames[s]}</button>`).join('');
+
+    document.getElementById('drawSettingsOverlay').style.display = 'flex';
+}
+
+function closeDrawSettings() {
+    const o = document.getElementById('drawSettingsOverlay');
+    if (o) o.style.display = 'none';
+}
+
+function setDrawStyle(key, value) {
+    const d = getDrawing(selectedId);
+    if (!d) return;
+    d.style[key] = value;
+    saveDrawingsForStock();
+    renderDrawings();
+    openDrawSettings(); // 刷新选中态
+}
+
+// ---------- 事件绑定（Pointer Events） ----------
+function initDrawOverlay() {
+    const overlay = document.getElementById('drawOverlay');
+    if (!overlay) return;
+    overlay.addEventListener('pointerdown', onDrawPointerDown);
+    overlay.addEventListener('pointermove', onDrawPointerMove);
+    overlay.addEventListener('pointerup', onDrawPointerUp);
+    overlay.addEventListener('pointercancel', onDrawPointerUp);
+}
+
+function onDrawPointerDown(e) {
+    if (!drawingMode) return;
+    const pos = getDrawPos(e);
+
+    // ===== 选择模式：选中 / 编辑 =====
+    if (activeTool === 'select') {
+        e.preventDefault();
+        try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch (_) {}
+        const sel = getDrawing(selectedId);
+        if (sel) {
+            const hi = hitHandle(sel, pos);
+            if (hi >= 0) {
+                drawGesture = { mode: 'handle', d: sel, hi };
+                return;
+            }
+        }
+        const hit = hitDrawing(pos);
+        if (hit) {
+            if (hit.id !== selectedId) selectDrawing(hit.id);
+            const startData = screenToData(pos.x, pos.y);
+            if (startData) {
+                drawGesture = {
+                    mode: 'move', d: hit,
+                    startData,
+                    orig: hit.points.map(p => ({ time: p.time, price: p.price })),
+                };
+            }
+        } else {
+            selectDrawing(null);
+        }
+        return;
+    }
+
+    // ===== 绘制工具 =====
+    e.preventDefault();
+    try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch (_) {}
+
+    // 平行通道：等待第3点
+    if (pendingChannel && pendingDrawing && pendingDrawing.type === 'channel') {
+        const data = snapOrData(pos);
+        if (!data) return;
+        pendingDrawing.points.push(data);
+        commitDrawing(pendingDrawing);
+        return;
+    }
+
+    // 点击式第二点（上次点击未拖动）
+    if (pendingDrawing && pendingDrawing.points.length >= 2 && !drawGesture) {
+        const data = snapOrData(pos);
+        if (!data) return;
+        pendingDrawing.points[1] = data;
+        if (pendingDrawing.type === 'channel') {
+            pendingChannel = true;
+            drawGesture = null;
+            updateDrawIndicator();
+            renderDrawings();
+            return;
+        }
+        commitDrawing(pendingDrawing);
+        return;
+    }
+
+    const data = snapOrData(pos);
+    if (!data) return;
+
+    if (activeTool === 'horizontalline' || activeTool === 'verticalline') {
+        commitDrawing(makeDrawing(activeTool, [data]));
+        return;
+    }
+
+    if (activeTool === 'text') {
+        const txt = prompt('请输入文字内容：', '');
+        if (txt && txt.trim()) commitDrawing(makeDrawing('text', [data], { text: txt.trim() }));
+        return;
+    }
+
+    if (activeTool === 'brush') {
+        pendingDrawing = makeDrawing('brush', [data]);
+        drawGesture = { mode: 'brush', last: pos };
+        renderDrawings();
+        updateDrawIndicator();
+        return;
+    }
+
+    // 两点/三点工具：按下即第一点，拖动实时预览
+    pendingDrawing = makeDrawing(activeTool, [data, data]);
+    drawGesture = { mode: 'draw', sx: pos.x, sy: pos.y, moved: false };
+    renderDrawings();
+    updateDrawIndicator();
+}
+
+function onDrawPointerMove(e) {
+    if (!drawingMode) return;
+    const pos = getDrawPos(e);
+
+    if (drawGesture && drawGesture.mode === 'brush' && pendingDrawing) {
+        e.preventDefault();
+        const last = drawGesture.last;
+        if (Math.hypot(pos.x - last.x, pos.y - last.y) < 4) return;
+        const data = snapOrData(pos);
+        if (data) {
+            pendingDrawing.points.push(data);
+            drawGesture.last = pos;
+            renderDrawings();
+        }
+        return;
+    }
+
+    if (drawGesture && drawGesture.mode === 'draw' && pendingDrawing) {
+        e.preventDefault();
+        if (Math.hypot(pos.x - drawGesture.sx, pos.y - drawGesture.sy) > 5) drawGesture.moved = true;
+        const data = snapOrData(pos);
+        if (data) {
+            pendingDrawing.points[1] = data;
+            renderDrawings();
+        }
+        return;
+    }
+
+    if (drawGesture && drawGesture.mode === 'handle') {
+        e.preventDefault();
+        const data = snapOrData(pos);
+        if (data) {
+            const d = drawGesture.d;
+            if (d.type === 'horizontalline') d.points[0].price = data.price;
+            else if (d.type === 'verticalline') d.points[0].time = data.time;
+            else d.points[drawGesture.hi] = data;
+            renderDrawings();
+        }
+        return;
+    }
+
+    if (drawGesture && drawGesture.mode === 'move') {
+        e.preventDefault();
+        const cur = screenToData(pos.x, pos.y);
+        if (cur) {
+            translateDrawing(drawGesture.d, drawGesture.orig, drawGesture.startData, cur);
+            renderDrawings();
+        }
+        return;
+    }
+
+    // 无手势时的悬停预览（点击式第二点）
+    if (pendingDrawing && pendingDrawing.points.length >= 2 && !pendingChannel) {
+        const data = snapOrData(pos);
+        if (data) {
+            pendingDrawing.points[1] = data;
+            renderDrawings();
+        }
+    }
+}
+
+function onDrawPointerUp(e) {
+    if (!drawingMode || !drawGesture) return;
+
+    if (drawGesture.mode === 'brush') {
+        if (pendingDrawing && pendingDrawing.points.length > 2) commitDrawing(pendingDrawing);
+        else { pendingDrawing = null; renderDrawings(); updateDrawIndicator(); }
+        drawGesture = null;
+        return;
+    }
+
+    if (drawGesture.mode === 'draw' && pendingDrawing) {
+        if (!drawGesture.moved) {
+            // 未拖动 → 保持点击式：等待第二点
+            drawGesture = null;
+            updateDrawIndicator();
+            return;
+        }
+        if (pendingDrawing.type === 'channel') {
+            pendingChannel = true;
+            drawGesture = null;
+            updateDrawIndicator();
+            renderDrawings();
+            return;
+        }
+        commitDrawing(pendingDrawing);
+        return;
+    }
+
+    if (drawGesture.mode === 'handle' || drawGesture.mode === 'move') {
+        saveDrawingsForStock();
+        renderDrawings();
+    }
+    drawGesture = null;
+}
+
+// 整体移动：按K线根数平移时间 + 价差平移价格
+function translateDrawing(d, orig, startData, curData) {
+    const map = getKlineMap();
+    const s = map[startData.time];
+    const c = map[curData.time];
+    const dBars = (s && c) ? (c.i - s.i) : 0;
+    const dPrice = curData.price - startData.price;
+    const all = getAllKlines();
+
+    if (d.type === 'horizontalline') {
+        d.points[0].price = orig[0].price + dPrice;
+        return;
+    }
+    if (d.type === 'verticalline') {
+        const o = map[orig[0].time];
+        if (o) {
+            const ni = Math.max(0, Math.min(all.length - 1, o.i + dBars));
+            d.points[0].time = all[ni].date;
+        }
+        return;
+    }
+    d.points = orig.map(p => {
+        const o = map[p.time];
+        let newTime = p.time;
+        if (o) {
+            const ni = Math.max(0, Math.min(all.length - 1, o.i + dBars));
+            newTime = all[ni].date;
+        }
+        return { time: newTime, price: p.price + dPrice };
+    });
+}
+
+// ---------- 命中检测 ----------
+function distToSeg(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 ? ((px - x1) * dx + (py - y1) * dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function hitHandle(d, pos) {
+    for (let i = 0; i < d.points.length; i++) {
+        const p = dataToScreen(d.points[i].time, d.points[i].price);
+        if (p && Math.hypot(pos.x - p.x, pos.y - p.y) < 16) return i;
+    }
+    return -1;
+}
+
+function hitDrawing(pos) {
+    const th = 9;
+    for (let i = drawings.length - 1; i >= 0; i--) {
+        const d = drawings[i];
+        const pts = d.points.map(p => dataToScreen(p.time, p.price));
+        if (pts.some(p => !p)) continue;
+
+        if (d.type === 'horizontalline') { if (Math.abs(pos.y - pts[0].y) < th) return d; continue; }
+        if (d.type === 'verticalline')   { if (Math.abs(pos.x - pts[0].x) < th) return d; continue; }
+        if (d.type === 'text')           { if (Math.hypot(pos.x - pts[0].x, pos.y - pts[0].y) < 26) return d; continue; }
+        if (d.type === 'brush') {
+            for (let j = 1; j < pts.length; j++) {
+                if (distToSeg(pos.x, pos.y, pts[j-1].x, pts[j-1].y, pts[j].x, pts[j].y) < th) return d;
+            }
+            continue;
+        }
+        if (pts.length < 2) continue;
+        const p1 = pts[0], p2 = pts[1];
+
+        if (d.type === 'rectangle') {
+            const x = Math.min(p1.x, p2.x), y = Math.min(p1.y, p2.y);
+            const w = Math.abs(p2.x - p1.x), h = Math.abs(p2.y - p1.y);
+            const inside = pos.x >= x && pos.x <= x + w && pos.y >= y && pos.y <= y + h;
+            const nearEdge =
+                distToSeg(pos.x, pos.y, x, y, x + w, y) < th ||
+                distToSeg(pos.x, pos.y, x, y + h, x + w, y + h) < th ||
+                distToSeg(pos.x, pos.y, x, y, x, y + h) < th ||
+                distToSeg(pos.x, pos.y, x + w, y, x + w, y + h) < th;
+            if (inside || nearEdge) return d;
+            continue;
+        }
+        if (d.type === 'channel') {
+            if (pts.length < 3) {
+                if (distToSeg(pos.x, pos.y, p1.x, p1.y, p2.x, p2.y) < th) return d;
+                continue;
+            }
+            const q1 = pts[2];
+            const q2 = { x: pts[2].x + (p2.x - p1.x), y: pts[2].y + (p2.y - p1.y) };
+            if (distToSeg(pos.x, pos.y, p1.x, p1.y, p2.x, p2.y) < th) return d;
+            if (distToSeg(pos.x, pos.y, q1.x, q1.y, q2.x, q2.y) < th) return d;
+            continue;
+        }
+        if (d.type === 'straightline') {
+            const ex = (p2.x - p1.x) || 0.001, ey = (p2.y - p1.y) || 0.001;
+            const f1 = { x: p1.x - ex * 50, y: p1.y - ey * 50 };
+            const f2 = { x: p2.x + ex * 50, y: p2.y + ey * 50 };
+            if (distToSeg(pos.x, pos.y, f1.x, f1.y, f2.x, f2.y) < th) return d;
+            continue;
+        }
+        if (d.type === 'ray') {
+            const ex = p2.x - p1.x, ey = p2.y - p1.y;
+            const f2 = { x: p2.x + ex * 50, y: p2.y + ey * 50 };
+            if (distToSeg(pos.x, pos.y, p1.x, p1.y, f2.x, f2.y) < th) return d;
+            continue;
+        }
+        if (d.type === 'fibonacci') {
+            if (distToSeg(pos.x, pos.y, p1.x, p1.y, p2.x, p2.y) < th) return d;
+            const leftX = Math.min(p1.x, p2.x);
+            for (const fib of FIB_LEVELS) {
+                const price = d.points[0].price + fib.level * (d.points[1].price - d.points[0].price);
+                const sy = candleSeries.priceToCoordinate(price);
+                if (sy === null || sy === undefined) continue;
+                if (pos.x >= leftX - 4 && Math.abs(pos.y - sy) < 7) return d;
+            }
+            continue;
+        }
+        // trendline / arrow
+        if (distToSeg(pos.x, pos.y, p1.x, p1.y, p2.x, p2.y) < th) return d;
+    }
+    return null;
+}
+
+// ---------- 渲染 ----------
+function createSvgEl(tag, attrs) {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+}
+
+function strokeAttrs(d, op) {
+    const attrs = {
+        stroke: d.style.color,
+        'stroke-width': d.style.width,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        opacity: op,
+    };
+    const dash = DASH_MAP[d.style.dash];
+    if (dash) attrs['stroke-dasharray'] = dash;
+    return attrs;
 }
 
 function renderDrawings() {
@@ -1734,86 +2174,107 @@ function renderDrawings() {
     svg.setAttribute('height', h);
     svg.innerHTML = '';
     for (const d of drawings) renderOneDrawing(svg, d, w, h, false);
-    if (currentDrawing) renderOneDrawing(svg, currentDrawing, w, h, true);
+    if (pendingDrawing) renderOneDrawing(svg, pendingDrawing, w, h, true);
+    const sel = getDrawing(selectedId);
+    if (sel && drawingMode) renderHandles(svg, sel);
 }
 
-function createSvgEl(tag, attrs) {
-    const el = document.createElementNS(SVG_NS, tag);
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-    return el;
+function renderHandles(svg, d) {
+    const color = d.style.color;
+    // 包围选中区域的高亮虚线框
+    for (const p of d.points) {
+        const sp = dataToScreen(p.time, p.price);
+        if (!sp) continue;
+        svg.appendChild(createSvgEl('circle', { cx: sp.x, cy: sp.y, r: 7, fill: 'rgba(47,107,255,0.25)', stroke: '#fff', 'stroke-width': 1.5 }));
+        svg.appendChild(createSvgEl('circle', { cx: sp.x, cy: sp.y, r: 2, fill: '#fff' }));
+    }
 }
 
-function renderOneDrawing(svg, drawing, w, h, isPreview) {
-    const color = drawing.color || '#e6edf3';
-    const op = isPreview ? 0.6 : 1;
+function renderOneDrawing(svg, d, w, h, isPreview) {
+    const color = d.style.color;
+    const op = isPreview ? 0.8 : 1;
+    const sA = strokeAttrs(d, op);
 
-    if (drawing.type === 'trendline' || drawing.type === 'arrow') {
-        if (drawing.points.length < 2) {
-            const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-            if (p) svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3, fill: color, opacity: op }));
-            return;
-        }
-        const p1 = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-        const p2 = dataToScreen(drawing.points[1].time, drawing.points[1].price);
-        if (!p1 || !p2) return;
-        svg.appendChild(createSvgEl('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-linecap': 'round' }));
-        if (drawing.type === 'arrow') {
-            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-            const al = 10, aa = Math.PI / 6;
-            const x3 = p2.x - al * Math.cos(angle - aa);
-            const y3 = p2.y - al * Math.sin(angle - aa);
-            const x4 = p2.x - al * Math.cos(angle + aa);
-            const y4 = p2.y - al * Math.sin(angle + aa);
-            svg.appendChild(createSvgEl('polygon', { points: `${p2.x},${p2.y} ${x3},${y3} ${x4},${y4}`, fill: color, opacity: op }));
-        }
-    } else if (drawing.type === 'straightline') {
-        // 直线：通过两点向两端无限延伸
-        if (drawing.points.length < 2) {
-            const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-            if (p) svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3, fill: color, opacity: op }));
-            return;
-        }
-        const p1 = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-        const p2 = dataToScreen(drawing.points[1].time, drawing.points[1].price);
-        if (!p1 || !p2) return;
+    const singlePointDot = (p) => {
+        svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3.5, fill: color, opacity: op }));
+    };
+
+    if (d.type === 'horizontalline') {
+        const p = dataToScreen(d.points[0].time, d.points[0].price);
+        if (!p) return;
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: 0, y1: p.y, x2: w, y2: p.y }, sA)));
+        // 右侧价格标签（富途样式）
+        const label = d.points[0].price.toFixed(2);
+        const lw = label.length * 6.5 + 10;
+        svg.appendChild(createSvgEl('rect', { x: w - lw - 2, y: p.y - 8, width: lw, height: 16, rx: 3, fill: color, opacity: op }));
+        const t = createSvgEl('text', { x: w - 7, y: p.y + 4, fill: '#0b0e14', 'font-size': 10.5, 'font-weight': 700, 'text-anchor': 'end', 'font-family': 'monospace' });
+        t.textContent = label;
+        svg.appendChild(t);
+        return;
+    }
+
+    if (d.type === 'verticalline') {
+        const p = dataToScreen(d.points[0].time, d.points[0].price);
+        if (!p) return;
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: p.x, y1: 0, x2: p.x, y2: h }, sA)));
+        return;
+    }
+
+    if (d.type === 'text') {
+        const p = dataToScreen(d.points[0].time, d.points[0].price);
+        if (!p) return;
+        const fs = 13;
+        const tw = d.text.length * fs * 0.62 + 10;
+        svg.appendChild(createSvgEl('rect', { x: p.x, y: p.y - fs - 4, width: tw, height: fs + 10, rx: 4, fill: 'rgba(11,14,20,0.75)', stroke: color, 'stroke-width': 1, opacity: op }));
+        const t = createSvgEl('text', { x: p.x + 5, y: p.y + 1, fill: color, 'font-size': fs, 'font-weight': 600, opacity: op });
+        t.textContent = d.text;
+        svg.appendChild(t);
+        return;
+    }
+
+    if (d.type === 'brush') {
+        if (d.points.length < 2) { const p = dataToScreen(d.points[0].time, d.points[0].price); if (p) singlePointDot(p); return; }
+        const pts = d.points.map(p => dataToScreen(p.time, p.price)).filter(p => p);
+        if (pts.length < 2) return;
+        svg.appendChild(createSvgEl('polyline', Object.assign({ points: pts.map(p => `${p.x},${p.y}`).join(' '), fill: 'none' }, sA)));
+        return;
+    }
+
+    // 两点及以上工具
+    if (d.points.length < 2) {
+        const p = dataToScreen(d.points[0].time, d.points[0].price);
+        if (p) singlePointDot(p);
+        return;
+    }
+    const p1 = dataToScreen(d.points[0].time, d.points[0].price);
+    const p2 = dataToScreen(d.points[1].time, d.points[1].price);
+    if (!p1 || !p2) return;
+
+    if (d.type === 'trendline') {
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }, sA)));
+    } else if (d.type === 'arrow') {
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }, sA)));
+        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const al = 10 + d.style.width * 2, aa = Math.PI / 6;
+        svg.appendChild(createSvgEl('polygon', {
+            points: `${p2.x},${p2.y} ${p2.x - al * Math.cos(angle - aa)},${p2.y - al * Math.sin(angle - aa)} ${p2.x - al * Math.cos(angle + aa)},${p2.y - al * Math.sin(angle + aa)}`,
+            fill: color, opacity: op,
+        }));
+    } else if (d.type === 'straightline') {
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
         let ex1, ey1, ex2, ey2;
-        if (Math.abs(dx) < 0.01) {
-            // 垂直线
-            ex1 = p1.x; ey1 = 0;
-            ex2 = p1.x; ey2 = h;
-        } else {
+        if (Math.abs(dx) < 0.01) { ex1 = p1.x; ey1 = 0; ex2 = p1.x; ey2 = h; }
+        else {
             const s = dy / dx;
-            // 向左延伸到 x=0
             ex1 = 0; ey1 = p1.y + s * (0 - p1.x);
-            // 向右延伸到 x=w
             ex2 = w; ey2 = p1.y + s * (w - p1.x);
-            // 如果超出边界，裁剪到 y=0 或 y=h
             if (ey1 < 0) { ey1 = 0; ex1 = p1.x + (0 - p1.y) / s; }
             else if (ey1 > h) { ey1 = h; ex1 = p1.x + (h - p1.y) / s; }
             if (ey2 < 0) { ey2 = 0; ex2 = p1.x + (0 - p1.y) / s; }
             else if (ey2 > h) { ey2 = h; ex2 = p1.x + (h - p1.y) / s; }
         }
-        svg.appendChild(createSvgEl('line', { x1: ex1, y1: ey1, x2: ex2, y2: ey2, stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-linecap': 'round' }));
-        // 端点标记
-        svg.appendChild(createSvgEl('circle', { cx: p1.x, cy: p1.y, r: 2.5, fill: color, opacity: op }));
-        svg.appendChild(createSvgEl('circle', { cx: p2.x, cy: p2.y, r: 2.5, fill: color, opacity: op }));
-    } else if (drawing.type === 'horizontalline') {
-        const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-        if (!p) return;
-        svg.appendChild(createSvgEl('line', { x1: 0, y1: p.y, x2: w, y2: p.y, stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-dasharray': '4,2' }));
-        const lbl = createSvgEl('text', { x: w - 4, y: p.y - 4, fill: color, 'font-size': 10, 'text-anchor': 'end', 'font-family': 'monospace', opacity: op });
-        lbl.textContent = drawing.points[0].price.toFixed(2);
-        svg.appendChild(lbl);
-    } else if (drawing.type === 'ray') {
-        if (drawing.points.length < 2) {
-            const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-            if (p) svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3, fill: color, opacity: op }));
-            return;
-        }
-        const p1 = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-        const p2 = dataToScreen(drawing.points[1].time, drawing.points[1].price);
-        if (!p1 || !p2) return;
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: ex1, y1: ey1, x2: ex2, y2: ey2 }, sA)));
+    } else if (d.type === 'ray') {
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
         let ex, ey;
         if (Math.abs(dx) < 0.01) { ex = p2.x; ey = dy > 0 ? h : 0; }
@@ -1823,44 +2284,41 @@ function renderOneDrawing(svg, drawing, w, h, isPreview) {
             if (ey < 0) { ey = 0; ex = p1.x + (0 - p1.y) / s; }
             else if (ey > h) { ey = h; ex = p1.x + (h - p1.y) / s; }
         }
-        svg.appendChild(createSvgEl('line', { x1: p1.x, y1: p1.y, x2: ex, y2: ey, stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-linecap': 'round' }));
-    } else if (drawing.type === 'rectangle') {
-        if (drawing.points.length < 2) {
-            const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-            if (p) svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3, fill: color, opacity: op }));
-            return;
-        }
-        const p1 = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-        const p2 = dataToScreen(drawing.points[1].time, drawing.points[1].price);
-        if (!p1 || !p2) return;
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: p1.x, y1: p1.y, x2: ex, y2: ey }, sA)));
+    } else if (d.type === 'rectangle') {
         const x = Math.min(p1.x, p2.x), y = Math.min(p1.y, p2.y);
         const rw = Math.abs(p2.x - p1.x), rh = Math.abs(p2.y - p1.y);
-        svg.appendChild(createSvgEl('rect', { x, y, width: rw, height: rh, fill: color + '15', stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-dasharray': isPreview ? '4,2' : 'none', rx: 2 }));
-    } else if (drawing.type === 'fibonacci') {
-        if (drawing.points.length < 2) {
-            const p = dataToScreen(drawing.points[0].time, drawing.points[0].price);
-            if (p) svg.appendChild(createSvgEl('circle', { cx: p.x, cy: p.y, r: 3, fill: color, opacity: op }));
-            return;
+        svg.appendChild(createSvgEl('rect', Object.assign({
+            x, y, width: rw, height: rh, rx: 1,
+            fill: color + '18',
+        }, sA, { stroke: color, fill: color + '18' })));
+    } else if (d.type === 'channel') {
+        svg.appendChild(createSvgEl('line', Object.assign({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }, sA)));
+        if (d.points.length >= 3) {
+            const p3 = dataToScreen(d.points[2].time, d.points[2].price);
+            if (p3) {
+                const q2 = { x: p3.x + (p2.x - p1.x), y: p3.y + (p2.y - p1.y) };
+                // 通道填充
+                svg.appendChild(createSvgEl('polygon', {
+                    points: `${p1.x},${p1.y} ${p2.x},${p2.y} ${q2.x},${q2.y} ${p3.x},${p3.y}`,
+                    fill: color + '14', opacity: op,
+                }));
+                svg.appendChild(createSvgEl('line', Object.assign({ x1: p3.x, y1: p3.y, x2: q2.x, y2: q2.y }, sA)));
+            }
         }
-        const price1 = drawing.points[0].price, price2 = drawing.points[1].price;
-        const p1 = dataToScreen(drawing.points[0].time, price1);
-        const p2 = dataToScreen(drawing.points[1].time, price2);
-        if (!p1 || !p2) return;
-        svg.appendChild(createSvgEl('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: color, 'stroke-width': 1, opacity: op * 0.4, 'stroke-dasharray': '2,2' }));
+    } else if (d.type === 'fibonacci') {
+        const price1 = d.points[0].price, price2 = d.points[1].price;
+        // 基准虚线
+        svg.appendChild(createSvgEl('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: color, 'stroke-width': 1, opacity: op * 0.4, 'stroke-dasharray': '3,3' }));
         const leftX = Math.min(p1.x, p2.x);
         for (const fib of FIB_LEVELS) {
             const price = price1 + fib.level * (price2 - price1);
             const sy = candleSeries.priceToCoordinate(price);
             if (sy === null || sy === undefined) continue;
-            svg.appendChild(createSvgEl('line', { x1: leftX, y1: sy, x2: w, y2: sy, stroke: color, 'stroke-width': 0.8, opacity: op * 0.6 }));
-            const lbl = createSvgEl('text', { x: w - 4, y: sy - 3, fill: color, 'font-size': 9, 'text-anchor': 'end', 'font-family': 'monospace', opacity: op * 0.9 });
+            svg.appendChild(createSvgEl('line', { x1: leftX, y1: sy, x2: w, y2: sy, stroke: color, 'stroke-width': 0.9, opacity: op * 0.75 }));
+            const lbl = createSvgEl('text', { x: w - 4, y: sy - 3, fill: color, 'font-size': 9.5, 'text-anchor': 'end', 'font-family': 'monospace', opacity: op * 0.95 });
             lbl.textContent = `${fib.pct} ${price.toFixed(2)}`;
             svg.appendChild(lbl);
         }
-    } else if (drawing.type === 'brush') {
-        if (drawing.points.length < 2) return;
-        const pts = drawing.points.map(p => dataToScreen(p.time, p.price)).filter(p => p);
-        if (pts.length < 2) return;
-        svg.appendChild(createSvgEl('polyline', { points: pts.map(p => `${p.x},${p.y}`).join(' '), fill: 'none', stroke: color, 'stroke-width': 1.5, opacity: op, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
     }
 }

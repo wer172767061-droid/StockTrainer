@@ -953,72 +953,217 @@ input {
     border-color: var(--color-accent);
 }
 
-/* 画图工具栏 */
+/* 画图工具栏（富途风格） */
 .draw-toolbar {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 54px;
-    display: flex;
-    gap: 3px;
-    background: rgba(22, 27, 34, 0.95);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 4px;
+    bottom: 8px;
+    left: 8px;
+    right: 52px;
+    background: rgba(21, 26, 35, 0.96);
+    border: 1px solid #2a3444;
+    border-radius: 12px;
     z-index: 25;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+}
+.dt-scroll {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    padding: 5px 6px;
     overflow-x: auto;
     scrollbar-width: none;
-    backdrop-filter: blur(8px);
+    -webkit-overflow-scrolling: touch;
 }
-.draw-toolbar::-webkit-scrollbar { display: none; }
+.dt-scroll::-webkit-scrollbar { display: none; }
 
 .dt-btn {
     flex-shrink: 0;
-    height: 30px;
-    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 46px;
+    height: 48px;
+    padding: 0 4px;
     border: 1px solid transparent;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    border-radius: 5px;
+    border-radius: 8px;
+    background: transparent;
+    color: #98a5b8;
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: all 0.1s;
+    transition: all 0.12s;
 }
-.dt-btn:active {
-    transform: scale(0.94);
-}
+.dt-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.06); }
 .dt-btn.active {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+    background: rgba(47, 107, 255, 0.18);
+    border-color: #2f6bff;
+    color: #5b9bff;
 }
-.dt-btn.dt-action {
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border-light);
+.dt-ic { display: flex; align-items: center; justify-content: center; height: 22px; }
+.dt-ic svg { display: block; }
+.dt-lb { font-size: 9px; font-weight: 600; white-space: nowrap; letter-spacing: 0.3px; }
+.dt-act.active {
+    background: rgba(0, 188, 212, 0.15);
+    border-color: #00bcd4;
+    color: #00bcd4;
 }
-.dt-btn.dt-action:active {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+.dt-sep {
+    flex-shrink: 0;
+    width: 1px;
+    margin: 6px 3px;
+    background: #2a3444;
 }
-.dt-btn.dt-close-btn {
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 14px;
-    padding: 0 8px;
+
+/* 选中画线操作条 */
+.draw-sel-bar {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    background: rgba(21, 26, 35, 0.96);
+    border: 1px solid #2a3444;
+    border-radius: 20px;
+    padding: 4px;
+    z-index: 26;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.dsb-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 12px;
     border: none;
-}
-.dt-btn.dt-magnet {
+    border-radius: 16px;
     background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border-light);
+    color: #c9d3e0;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
 }
-.dt-btn.dt-magnet.active {
-    background: rgba(34, 211, 238, 0.15);
-    border-color: #22d3ee;
-    color: #22d3ee;
+.dsb-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.08); }
+.dsb-btn.dsb-danger { color: #f23645; }
+
+/* 画线设置底部弹窗 */
+.ds-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.ds-sheet {
+    width: 100%;
+    max-width: 480px;
+    background: #171d29;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-top: 1px solid #2a3444;
+    padding: 8px 18px 26px;
+    animation: dsSlideUp 0.22s ease;
+}
+@keyframes dsSlideUp {
+    from { transform: translateY(40px); opacity: 0.4; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.ds-grabber {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: #3a4556;
+    margin: 4px auto 10px;
+}
+.ds-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+}
+.ds-group { margin-bottom: 16px; }
+.ds-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.ds-colors {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.ds-color {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.12s;
+    position: relative;
+}
+.ds-color:active { transform: scale(0.88); }
+.ds-color.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+}
+.ds-opts {
+    display: flex;
+    gap: 8px;
+}
+.ds-opt {
+    flex: 1;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #2a3444;
+    background: #1d2532;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+}
+.ds-opt:active { transform: scale(0.95); }
+.ds-opt.active {
+    border-color: #2f6bff;
+    background: rgba(47, 107, 255, 0.16);
+    color: #5b9bff;
+}
+.ds-line { width: 26px; border-radius: 2px; }
+.ds-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+.ds-btn {
+    flex: 1;
+    height: 42px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.ds-btn:active { transform: scale(0.97); }
+.ds-delete {
+    background: rgba(242, 54, 69, 0.14);
+    color: #f23645;
+    border: 1px solid rgba(242, 54, 69, 0.4);
+}
+.ds-ok {
+    background: var(--color-accent);
+    color: #fff;
 }
 
 /* 画图提示 */
