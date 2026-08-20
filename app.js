@@ -1657,17 +1657,34 @@ function timeToStr(time) {
 
 function screenToData(x, y) {
     if (!chart || !candleSeries) return null;
-    const time = chart.timeScale().coordinateToTime(x);
+    const ts = chart.timeScale();
     const price = candleSeries.coordinateToPrice(y);
-    if (time === null || time === undefined || price === null || price === undefined) return null;
+    if (price === null || price === undefined) return null;
+
+    // 先尝试用时间坐标（K线数据范围内）
+    const time = ts.coordinateToTime(x);
     const timeStr = timeToStr(time);
-    if (!timeStr) return null;
-    return { time: timeStr, price: price };
+    if (timeStr) return { time: timeStr, price };
+
+    // 空白区域（右侧offset等）：用逻辑坐标兜底
+    const logical = ts.coordinateToLogical(x);
+    if (logical !== null && logical !== undefined) {
+        return { time: '__log_' + logical.toFixed(4), price };
+    }
+    return null;
 }
 
 function dataToScreen(time, price) {
     if (!chart || !candleSeries) return null;
-    const x = chart.timeScale().timeToCoordinate(time);
+    const ts = chart.timeScale();
+    let x;
+    if (typeof time === 'string' && time.startsWith('__log_')) {
+        // 逻辑坐标（空白区域画线）
+        const logical = parseFloat(time.substring(6));
+        x = ts.logicalToCoordinate(logical);
+    } else {
+        x = ts.timeToCoordinate(time);
+    }
     const y = candleSeries.priceToCoordinate(price);
     if (x === null || x === undefined || y === null || y === undefined) return null;
     return { x, y };
@@ -1685,7 +1702,7 @@ function getKlineMap() {
     return m;
 }
 
-// 磁吸：优先吸附开/收，其次高/低
+// 磁吸：优先吸附开/收，其次高/低（仅在极近时吸附）
 function snapPoint(x, y) {
     if (!magnetMode || !chart || !candleSeries) return null;
     const time = chart.timeScale().coordinateToTime(x);
@@ -1694,7 +1711,7 @@ function snapPoint(x, y) {
     const entry = getKlineMap()[timeStr];
     if (!entry) return null;
     const k = entry.k;
-    const snapDist = 18; // 磁吸吸附距离（像素）
+    const snapDist = 8; // 磁吸吸附距离（像素），仅在极近时吸附
     // 第一优先级：开/收
     let best = null, bestD = snapDist;
     for (const v of [k.open, k.close]) {
@@ -2037,25 +2054,41 @@ function onDrawPointerUp(e) {
 // 整体移动：按K线根数平移时间 + 价差平移价格
 function translateDrawing(d, orig, startData, curData) {
     const map = getKlineMap();
-    const s = map[startData.time];
-    const c = map[curData.time];
-    const dBars = (s && c) ? (c.i - s.i) : 0;
-    const dPrice = curData.price - startData.price;
     const all = getAllKlines();
+    const isLog = t => typeof t === 'string' && t.startsWith('__log_');
+    const parseLog = t => parseFloat(t.substring(6));
+
+    // 计算时间偏移（K线根数或逻辑坐标增量）
+    let dBars = 0;
+    if (isLog(startData.time) && isLog(curData.time)) {
+        dBars = Math.round(parseLog(curData.time) - parseLog(startData.time));
+    } else {
+        const s = map[startData.time];
+        const c = map[curData.time];
+        dBars = (s && c) ? (c.i - s.i) : 0;
+    }
+    const dPrice = curData.price - startData.price;
 
     if (d.type === 'horizontalline') {
         d.points[0].price = orig[0].price + dPrice;
         return;
     }
     if (d.type === 'verticalline') {
-        const o = map[orig[0].time];
-        if (o) {
-            const ni = Math.max(0, Math.min(all.length - 1, o.i + dBars));
-            d.points[0].time = all[ni].date;
+        if (isLog(orig[0].time)) {
+            d.points[0].time = '__log_' + (parseLog(orig[0].time) + dBars).toFixed(4);
+        } else {
+            const o = map[orig[0].time];
+            if (o) {
+                const ni = Math.max(0, Math.min(all.length - 1, o.i + dBars));
+                d.points[0].time = all[ni].date;
+            }
         }
         return;
     }
     d.points = orig.map(p => {
+        if (isLog(p.time)) {
+            return { time: '__log_' + (parseLog(p.time) + dBars).toFixed(4), price: p.price + dPrice };
+        }
         const o = map[p.time];
         let newTime = p.time;
         if (o) {
