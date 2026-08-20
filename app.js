@@ -1702,16 +1702,17 @@ function getKlineMap() {
     return m;
 }
 
-// 磁吸：优先吸附开/收，其次高/低（仅在极近时吸附）
+// 磁吸：优先吸附开/收，其次高/低（强制吸附，空白处无法画线）
 function snapPoint(x, y) {
-    if (!magnetMode || !chart || !candleSeries) return null;
-    const time = chart.timeScale().coordinateToTime(x);
+    if (!chart || !candleSeries) return null;
+    const ts = chart.timeScale();
+    const time = ts.coordinateToTime(x);
     const timeStr = timeToStr(time);
-    if (!timeStr) return null;
+    if (!timeStr) return null; // 空白区域不吸附
     const entry = getKlineMap()[timeStr];
     if (!entry) return null;
     const k = entry.k;
-    const snapDist = 8; // 磁吸吸附距离（像素），仅在极近时吸附
+    const snapDist = 25; // 磁吸吸附距离（像素）
     // 第一优先级：开/收
     let best = null, bestD = snapDist;
     for (const v of [k.open, k.close]) {
@@ -1732,8 +1733,9 @@ function snapPoint(x, y) {
     return best === null ? null : { time: timeStr, price: best };
 }
 
+// 只允许吸附K线，空白处返回null（无法画线）
 function snapOrData(pos) {
-    return snapPoint(pos.x, pos.y) || screenToData(pos.x, pos.y);
+    return snapPoint(pos.x, pos.y);
 }
 
 // ---------- 画线数据 ----------
@@ -1883,7 +1885,7 @@ function onDrawPointerDown(e) {
         const hit = hitDrawing(pos);
         if (hit) {
             if (hit.id !== selectedId) selectDrawing(hit.id);
-            const startData = screenToData(pos.x, pos.y);
+            const startData = snapPoint(pos.x, pos.y);
             if (startData) {
                 drawGesture = {
                     mode: 'move', d: hit,
@@ -1998,7 +2000,7 @@ function onDrawPointerMove(e) {
 
     if (drawGesture && drawGesture.mode === 'move') {
         e.preventDefault();
-        const cur = screenToData(pos.x, pos.y);
+        const cur = snapPoint(pos.x, pos.y);
         if (cur) {
             translateDrawing(drawGesture.d, drawGesture.orig, drawGesture.startData, cur);
             renderDrawings();
