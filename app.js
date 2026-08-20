@@ -1582,7 +1582,7 @@ function selectDrawTool(tool) {
 function toggleMagnet() {
     magnetMode = !magnetMode;
     refreshToolbarActive();
-    showToast(magnetMode ? '磁吸已开启（吸附K线开高低收）' : '磁吸已关闭', 'info');
+    showToast(magnetMode ? '磁吸已开启（优先吸附开/收，其次高/低）' : '磁吸已关闭', 'info');
 }
 
 function updateDrawIndicator() {
@@ -1685,7 +1685,7 @@ function getKlineMap() {
     return m;
 }
 
-// 磁吸：吸附到最近K线的开/高/低/收
+// 磁吸：优先吸附开/收，其次高/低
 function snapPoint(x, y) {
     if (!magnetMode || !chart || !candleSeries) return null;
     const time = chart.timeScale().coordinateToTime(x);
@@ -1694,12 +1694,23 @@ function snapPoint(x, y) {
     const entry = getKlineMap()[timeStr];
     if (!entry) return null;
     const k = entry.k;
-    let best = null, bestD = 20;
-    for (const v of [k.open, k.high, k.low, k.close]) {
+    const snapDist = 18; // 磁吸吸附距离（像素）
+    // 第一优先级：开/收
+    let best = null, bestD = snapDist;
+    for (const v of [k.open, k.close]) {
         const cy = candleSeries.priceToCoordinate(v);
         if (cy === null || cy === undefined) continue;
         const d = Math.abs(cy - y);
         if (d < bestD) { bestD = d; best = v; }
+    }
+    // 第二优先级：高/低（仅在开/收未命中时）
+    if (best === null) {
+        for (const v of [k.high, k.low]) {
+            const cy = candleSeries.priceToCoordinate(v);
+            if (cy === null || cy === undefined) continue;
+            const d = Math.abs(cy - y);
+            if (d < bestD) { bestD = d; best = v; }
+        }
     }
     return best === null ? null : { time: timeStr, price: best };
 }
@@ -2173,8 +2184,26 @@ function renderDrawings() {
     svg.setAttribute('width', w);
     svg.setAttribute('height', h);
     svg.innerHTML = '';
-    for (const d of drawings) renderOneDrawing(svg, d, w, h, false);
-    if (pendingDrawing) renderOneDrawing(svg, pendingDrawing, w, h, true);
+
+    // 价格区域下边界：右价格轴 bottom margin=0.25 → 价格区到75%
+    // 成交量 top margin=0.8 → 成交量区从80%开始，取78%作为裁剪线
+    const priceBottom = h * 0.78;
+
+    // clipPath：限制画线只渲染在价格区域，不与成交量重叠
+    const defs = createSvgEl('defs', {});
+    const clip = createSvgEl('clipPath', { id: 'drawClip' });
+    clip.appendChild(createSvgEl('rect', { x: 0, y: 0, width: w, height: priceBottom }));
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+
+    // 画线内容受clip限制
+    const g = createSvgEl('g', { 'clip-path': 'url(#drawClip)' });
+    svg.appendChild(g);
+
+    for (const d of drawings) renderOneDrawing(g, d, w, h, false);
+    if (pendingDrawing) renderOneDrawing(g, pendingDrawing, w, h, true);
+
+    // 选中手柄不受clip限制（保证可交互）
     const sel = getDrawing(selectedId);
     if (sel && drawingMode) renderHandles(svg, sel);
 }
