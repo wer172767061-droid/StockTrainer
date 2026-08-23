@@ -220,12 +220,12 @@ function getMarketSuffix(mkt) {
 }
 
 async function fetchEarningsDates(code, mkt) {
-    // 财报数据仍用东方财富 API
+    // 东方财富美股API的 NOTICE_DATE 数据不可靠（偏移约1年），改用 REPORT_DATE + 32天估算公告日
     const suffixes = [getMarketSuffix(mkt), getMarketSuffix(mkt) === 'O' ? 'N' : 'O'];
     
     for (const suffix of suffixes) {
         const secucode = `${code}.${suffix}`;
-        const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_USF10_FN_GMAININDICATOR&columns=SECUCODE,NOTICE_DATE,REPORT_TYPE,DATE_TYPE&filter=(SECUCODE=%22${secucode}%22)&pageSize=100&sortColumns=NOTICE_DATE&sortTypes=-1&source=INTLSECURITIES&client=PC`;
+        const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_USF10_FN_GMAININDICATOR&columns=SECUCODE,NOTICE_DATE,REPORT_TYPE,DATE_TYPE,REPORT_DATE&filter=(SECUCODE=%22${secucode}%22)&pageSize=100&sortColumns=REPORT_DATE&sortTypes=-1&source=INTLSECURITIES&client=PC`;
         try {
             const resp = await fetch(url);
             const json = await resp.json();
@@ -233,13 +233,26 @@ async function fetchEarningsDates(code, mkt) {
             const earnings = [];
             const seenDates = new Set();
             for (const item of json.result.data) {
-                if (!item.NOTICE_DATE) continue;
-                const date = String(item.NOTICE_DATE).substring(0, 10);
-                if (seenDates.has(date)) continue;
-                seenDates.add(date);
+                if (!item.REPORT_DATE) continue;
+                // REPORT_DATE = 报告期截止日，美股通常在截止日后约32天发布财报
+                const reportDate = new Date(String(item.REPORT_DATE).substring(0, 10));
+                reportDate.setDate(reportDate.getDate() + 32);
+                const estDate = reportDate.toISOString().substring(0, 10);
+                if (seenDates.has(estDate)) continue;
+                seenDates.add(estDate);
+                // 把 REPORT_TYPE 转为中文
+                const rp = item.REPORT_TYPE || '';
+                let typeLabel = '财报';
+                if (rp.includes('FY')) typeLabel = '年报';
+                else if (rp.includes('Q9')) typeLabel = '三季报(累计)';
+                else if (rp.includes('Q6')) typeLabel = '中报(累计)';
+                else if (rp.includes('Q4')) typeLabel = '四季报';
+                else if (rp.includes('Q3')) typeLabel = '三季报';
+                else if (rp.includes('Q2')) typeLabel = '中报';
+                else if (rp.includes('Q1')) typeLabel = '一季报';
                 earnings.push({
-                    date: date,
-                    type: item.REPORT_TYPE || '财报',
+                    date: estDate,
+                    type: typeLabel,
                     desc: item.DATE_TYPE || '',
                 });
             }
