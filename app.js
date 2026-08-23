@@ -220,9 +220,22 @@ function getMarketSuffix(mkt) {
 }
 
 async function fetchEarningsDates(code, mkt) {
-    // 东方财富美股API的 NOTICE_DATE 数据不可靠（偏移约1年），改用 REPORT_DATE + 32天估算公告日
+    // 优先从后端财报数据库读取（fetch_earnings.py 预生成的修正后实际公告日）
+    try {
+        const resp = await fetch(`/api/earnings?code=${encodeURIComponent(code)}`);
+        if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return data.map(e => ({ date: e.date, type: e.type, desc: '' }));
+            }
+        }
+    } catch (e) {
+        // 后端不可用时降级到在线估算
+    }
+
+    // 降级方案：东方财富在线估算（REPORT_DATE + 32天）
     const suffixes = [getMarketSuffix(mkt), getMarketSuffix(mkt) === 'O' ? 'N' : 'O'];
-    
+
     for (const suffix of suffixes) {
         const secucode = `${code}.${suffix}`;
         const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_USF10_FN_GMAININDICATOR&columns=SECUCODE,NOTICE_DATE,REPORT_TYPE,DATE_TYPE,REPORT_DATE&filter=(SECUCODE=%22${secucode}%22)&pageSize=100&sortColumns=REPORT_DATE&sortTypes=-1&source=INTLSECURITIES&client=PC`;

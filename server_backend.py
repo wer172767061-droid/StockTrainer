@@ -83,6 +83,29 @@ def api_stock_list():
     return jsonify(stock_list)
 
 
+@app.route('/api/earnings')
+def api_earnings():
+    """获取财报公告日数据库（支持 ?code=XXX 过滤单只股票）
+
+    数据由 fetch_earnings.py 预先生成（修正了东方财富API的年份偏移bug），
+    返回修正后的实际公告日。
+    """
+    earnings_path = os.path.join(DATA_DIR, '_earnings.json')
+    if not os.path.exists(earnings_path):
+        return jsonify({})
+
+    try:
+        with open(earnings_path, 'r') as f:
+            db = json.load(f)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    code = request.args.get('code', '').upper()
+    if code:
+        return jsonify(db.get(code, []))
+    return jsonify(db)
+
+
 @app.route('/api/health')
 def api_health():
     """健康检查"""
