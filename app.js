@@ -226,7 +226,8 @@ async function fetchEarningsDates(code, mkt) {
         if (resp.ok) {
             const data = await resp.json();
             if (Array.isArray(data) && data.length > 0) {
-                return data.map(e => ({ date: e.date, type: e.type, desc: '' }));
+                // reaction = 价格反应日（盘后公布的财报顺延到跳空那天），提醒按此日显示
+                return data.map(e => ({ date: e.reaction || e.date, type: e.type, desc: '', predicted: !!e.predicted }));
             }
         }
     } catch (e) {
@@ -311,10 +312,10 @@ function updateEarningsReminder() {
     el.style.display = 'flex';
     if (nextEarnings.daysUntil === 0) {
         el.className = 'earnings-banner earnings-today';
-        el.innerHTML = `<span class="earnings-icon">📢</span><span>今日财报发布 · ${nextEarnings.type}</span>`;
+        el.innerHTML = `<span class="earnings-icon">📢</span><span>今日财报发布${nextEarnings.predicted ? '（预计）' : ''} · ${nextEarnings.type}</span>`;
     } else {
         el.className = 'earnings-banner earnings-soon';
-        el.innerHTML = `<span class="earnings-icon">⚠️</span><span>${nextEarnings.daysUntil}个交易日后财报 · ${nextEarnings.type}</span>`;
+        el.innerHTML = `<span class="earnings-icon">⚠️</span><span>${nextEarnings.daysUntil}个交易日后财报${nextEarnings.predicted ? '（预计）' : ''} · ${nextEarnings.type}</span>`;
     }
 }
 
@@ -476,7 +477,7 @@ async function newGame() {
             const next = state.earningsEvents.find(e => e.tradingDayIndex >= state.currentDay);
             if (next) {
                 setTimeout(() => {
-                    showToast(`📊 财报预告: ${next.type}将在 D${next.tradingDayIndex + 1} 发布`, 'info');
+                    showToast(`📊 财报预告: ${next.type}${next.predicted ? '（预计）' : ''}将在 D${next.tradingDayIndex + 1} 发布`, 'info');
                 }, 1500);
             }
         }
@@ -1162,7 +1163,7 @@ function nextDay() {
     // 财报日提醒
     const earningsToday = state.earningsEvents.find(e => e.tradingDayIndex === state.currentDay);
     if (earningsToday) {
-        showToast(`📢 今日财报发布日: ${earningsToday.type}`, 'warning');
+        showToast(`📢 今日财报发布日${earningsToday.predicted ? '（预计）' : ''}: ${earningsToday.type}`, 'warning');
     }
 
     updateChart(); updateUI();
