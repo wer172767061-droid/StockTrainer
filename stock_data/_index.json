@@ -1,302 +1,94 @@
 {
   "AAPL": {
-    "name": "Apple",
-    "days": 752
+    "name": "苹果",
+    "days": 2512
   },
-  "ABNB": {
-    "name": "Airbnb",
-    "days": 752
-  },
-  "ACN": {
-    "name": "Accenture plc",
-    "days": 752
-  },
-  "ADBE": {
-    "name": "Adobe",
-    "days": 752
-  },
-  "ADI": {
-    "name": "Analog Devices",
-    "days": 752
-  },
-  "ALAB": {
-    "name": "Astera Labs",
-    "days": 601
-  },
-  "AMAT": {
-    "name": "Applied Materials",
-    "days": 752
-  },
-  "AMD": {
-    "name": "Advanced Micro Devices",
-    "days": 752
-  },
-  "AMZN": {
-    "name": "Amazon.com",
-    "days": 752
-  },
-  "ANET": {
-    "name": "Arista Networks",
-    "days": 752
-  },
-  "APP": {
-    "name": "Applovin",
-    "days": 752
-  },
-  "ARM": {
-    "name": "Arm Holdings plc",
-    "days": 730
-  },
-  "AVGO": {
-    "name": "Broadcom",
-    "days": 752
-  },
-  "BILL": {
-    "name": "BILL Holdings",
-    "days": 752
-  },
-  "CDNS": {
-    "name": "Cadence Design Systems",
-    "days": 752
-  },
-  "CRM": {
-    "name": "Salesforce",
-    "days": 752
-  },
-  "CRWD": {
-    "name": "CrowdStrike Holdings",
-    "days": 752
-  },
-  "CSCO": {
-    "name": "Cisco Systems",
-    "days": 752
-  },
-  "CTSH": {
-    "name": "Cognizant Technology Solutions ",
-    "days": 752
-  },
-  "DASH": {
-    "name": "DoorDash",
-    "days": 752
-  },
-  "DDOG": {
-    "name": "Datadog",
-    "days": 752
-  },
-  "DELL": {
-    "name": "戴尔科技",
-    "days": 752
-  },
-  "ESTC": {
-    "name": "Elastic",
-    "days": 752
-  },
-  "FFIV": {
-    "name": "F5 Inc",
-    "days": 752
-  },
-  "FTNT": {
-    "name": "Fortinet",
-    "days": 752
-  },
-  "GOOG": {
-    "name": "Alphabet",
-    "days": 752
+  "MSFT": {
+    "name": "微软",
+    "days": 2512
   },
   "GOOGL": {
-    "name": "Alphabet",
-    "days": 752
+    "name": "谷歌-A",
+    "days": 2512
   },
-  "GTLB": {
-    "name": "Gitlab",
-    "days": 752
-  },
-  "HOOD": {
-    "name": "Robinhood",
-    "days": 752
-  },
-  "HPE": {
-    "name": "Hewlett Packard Enterprise Comp",
-    "days": 752
-  },
-  "HPQ": {
-    "name": "HP",
-    "days": 752
-  },
-  "IBM": {
-    "name": "International Business Machines",
-    "days": 752
-  },
-  "INTC": {
-    "name": "Intel",
-    "days": 752
-  },
-  "INTU": {
-    "name": "Intuit",
-    "days": 752
-  },
-  "IT": {
-    "name": "Gartner",
-    "days": 752
-  },
-  "KEYS": {
-    "name": "Keysight Technologies",
-    "days": 752
-  },
-  "KLAC": {
-    "name": "KLA",
-    "days": 752
-  },
-  "LRCX": {
-    "name": "Lam Research",
-    "days": 752
-  },
-  "MCHP": {
-    "name": "Microchip Technology Incorporat",
-    "days": 752
-  },
-  "MDB": {
-    "name": "MongoDB",
-    "days": 752
+  "AMZN": {
+    "name": "亚马逊",
+    "days": 2512
   },
   "META": {
     "name": "Meta Platforms",
-    "days": 752
-  },
-  "MPWR": {
-    "name": "Monolithic Power Systems",
-    "days": 752
-  },
-  "MRVL": {
-    "name": "Marvell Technology",
-    "days": 752
-  },
-  "MSFT": {
-    "name": "Microsoft",
-    "days": 752
-  },
-  "MU": {
-    "name": "Micron Technology",
-    "days": 752
-  },
-  "NET": {
-    "name": "Cloudflare",
-    "days": 752
-  },
-  "NFLX": {
-    "name": "Netflix",
-    "days": 752
-  },
-  "NOW": {
-    "name": "ServiceNow",
-    "days": 752
-  },
-  "NTAP": {
-    "name": "NetApp",
-    "days": 752
+    "days": 2512
   },
   "NVDA": {
-    "name": "NVIDIA",
-    "days": 752
+    "name": "英伟达",
+    "days": 2512
   },
-  "NXPI": {
-    "name": "NXP Semiconductors N.V.",
-    "days": 752
+  "AVGO": {
+    "name": "博通",
+    "days": 2512
   },
-  "OKTA": {
-    "name": "Okta",
-    "days": 752
+  "CSCO": {
+    "name": "思科",
+    "days": 2512
   },
-  "ON": {
-    "name": "ON Semiconductor",
-    "days": 752
+  "ADBE": {
+    "name": "Adobe",
+    "days": 2512
   },
-  "ORCL": {
-    "name": "Oracle",
-    "days": 752
+  "QCOM": {
+    "name": "高通",
+    "days": 2512
+  },
+  "TXN": {
+    "name": "德州仪器",
+    "days": 2512
+  },
+  "INTC": {
+    "name": "英特尔",
+    "days": 2512
+  },
+  "AMAT": {
+    "name": "应用材料",
+    "days": 2512
+  },
+  "ADI": {
+    "name": "亚德诺",
+    "days": 2512
+  },
+  "LRCX": {
+    "name": "泛林集团",
+    "days": 2512
+  },
+  "MU": {
+    "name": "美光科技",
+    "days": 2512
+  },
+  "INTU": {
+    "name": "财捷",
+    "days": 2512
+  },
+  "NFLX": {
+    "name": "奈飞",
+    "days": 2512
+  },
+  "ADP": {
+    "name": "自动数据处理",
+    "days": 2512
   },
   "PANW": {
     "name": "Palo Alto Networks",
-    "days": 752
+    "days": 2512
   },
-  "PLTR": {
-    "name": "Palantir Technologies",
-    "days": 752
+  "NXPI": {
+    "name": "恩智浦",
+    "days": 2512
   },
-  "PYPL": {
-    "name": "PayPal Holdings",
-    "days": 752
+  "BKNG": {
+    "name": "Booking Holdings",
+    "days": 2512
   },
-  "QCOM": {
-    "name": "QUALCOMM Incorporated",
-    "days": 752
-  },
-  "RBLX": {
-    "name": "Roblox",
-    "days": 752
-  },
-  "RKLB": {
-    "name": "Rocket Lab",
-    "days": 752
-  },
-  "ROKU": {
-    "name": "Roku",
-    "days": 752
-  },
-  "SHOP": {
-    "name": "Shopify",
-    "days": 752
-  },
-  "SNOW": {
-    "name": "Snowflake",
-    "days": 752
-  },
-  "SNPS": {
-    "name": "Synopsys",
-    "days": 752
-  },
-  "SPOT": {
-    "name": "Spotify Technology S.A.",
-    "days": 752
-  },
-  "STX": {
-    "name": "Seagate Technology Holdings PLC",
-    "days": 752
-  },
-  "TEAM": {
-    "name": "Atlassian",
-    "days": 752
-  },
-  "TER": {
-    "name": "Teradyne",
-    "days": 752
-  },
-  "TSLA": {
-    "name": "Tesla",
-    "days": 752
-  },
-  "TSM": {
-    "name": "Taiwan Semiconductor Manufactur",
-    "days": 752
-  },
-  "TXN": {
-    "name": "Texas Instruments Incorporated",
-    "days": 752
-  },
-  "UBER": {
-    "name": "Uber Technologies",
-    "days": 752
-  },
-  "WDAY": {
-    "name": "Workday",
-    "days": 752
-  },
-  "WDC": {
-    "name": "Western Digital",
-    "days": 752
-  },
-  "ZS": {
-    "name": "Zscaler",
-    "days": 752
+  "CTSH": {
+    "name": "高知特",
+    "days": 2512
   }
 }
