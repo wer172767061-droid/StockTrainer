@@ -3,63 +3,25 @@
  * 数据源：本地后端 API（富途牛牛数据）
  */
 
-// ===== 科技股池（纳斯达克100 + 标普500科技 + 热门科技股）=====
-// 已排除: 中概股、医疗健康、保险、传统金融、能源、材料、消费、工业
-// 市值过滤: 近3年每年市值都 > $100亿
+// ===== 科技股池（23只核心科技股，近10年K线）=====
+// 数据范围: 2016-09 ~ 2026-09 (富途OpenD)
+// 注: EA 已于2025年被私有化收购退市，无法获取数据，故不在池中
 const US_STOCKS = [
-    // === NASDAQ 100 核心科技巨头 ===
+    // === 科技巨头 ===
     {code:'AAPL',name:'苹果',mkt:105},{code:'MSFT',name:'微软',mkt:105},
-    {code:'GOOGL',name:'谷歌A',mkt:105},{code:'GOOG',name:'谷歌C',mkt:105},
-    {code:'AMZN',name:'亚马逊',mkt:105},{code:'META',name:'Meta',mkt:105},
-    {code:'NVDA',name:'英伟达',mkt:105},{code:'AMD',name:'AMD',mkt:105},
-    {code:'INTC',name:'英特尔',mkt:105},{code:'AVGO',name:'博通',mkt:105},
-    {code:'ADBE',name:'Adobe',mkt:105},{code:'CSCO',name:'思科',mkt:105},
-    {code:'QCOM',name:'高通',mkt:105},{code:'TXN',name:'德州仪器',mkt:105},
-    {code:'ORCL',name:'甲骨文',mkt:105},{code:'CRM',name:'Salesforce',mkt:105},
-    {code:'NOW',name:'ServiceNow',mkt:105},{code:'INTU',name:'Intuit',mkt:105},
-    {code:'MU',name:'美光',mkt:105},{code:'AMAT',name:'应用材料',mkt:105},
-    {code:'ADI',name:'亚德诺',mkt:105},{code:'LRCX',name:'泛林',mkt:105},
-    {code:'NXPI',name:'恩智浦',mkt:105},{code:'MCHP',name:'微芯',mkt:105},
-    {code:'MRVL',name:'迈威尔',mkt:105},{code:'KLAC',name:'KLA',mkt:105},
-    {code:'ANET',name:'Arista',mkt:105},{code:'ON',name:'安森美',mkt:105},
-    // === S&P 500 信息技术 ===
-    {code:'IBM',name:'IBM',mkt:106},{code:'ACN',name:'埃森哲',mkt:106},
-    {code:'CTSH',name:'Cognizant',mkt:105},{code:'IT',name:'Gartner',mkt:105},
-    {code:'KEYS',name:'Keysight',mkt:106},{code:'TER',name:'Teradyne',mkt:106},
-    {code:'STX',name:'希捷',mkt:106},{code:'WDC',name:'西部数据',mkt:106},
-    {code:'NTAP',name:'NetApp',mkt:106},{code:'HPQ',name:'惠普',mkt:106},
-    {code:'HPE',name:'慧与',mkt:106},{code:'FFIV',name:'F5',mkt:106},
-    {code:'PANW',name:'Palo Alto',mkt:105},{code:'FTNT',name:'Fortinet',mkt:105},
-    {code:'SNPS',name:'Synopsys',mkt:105},{code:'CDNS',name:'Cadence',mkt:105},
-    {code:'WDAY',name:'Workday',mkt:105},
-    // === 网络平台 / 互联网科技 ===
-    {code:'TSLA',name:'特斯拉',mkt:105},{code:'NFLX',name:'奈飞',mkt:105},
-    {code:'UBER',name:'Uber',mkt:105},{code:'ABNB',name:'Airbnb',mkt:105},
-    {code:'SHOP',name:'Shopify',mkt:105},{code:'PYPL',name:'PayPal',mkt:105},
-    {code:'DASH',name:'DoorDash',mkt:105},{code:'ROKU',name:'Roku',mkt:105},
-    {code:'SPOT',name:'Spotify',mkt:105},
-    // === 云计算 / SaaS ===
-    {code:'SNOW',name:'Snowflake',mkt:105},{code:'DDOG',name:'Datadog',mkt:105},
-    {code:'TEAM',name:'Atlassian',mkt:105},{code:'MDB',name:'MongoDB',mkt:105},
-    {code:'OKTA',name:'Okta',mkt:105},{code:'CRWD',name:'CrowdStrike',mkt:105},
-    {code:'PLTR',name:'Palantir',mkt:105},{code:'NET',name:'Cloudflare',mkt:105},
-    {code:'GTLB',name:'GitLab',mkt:105},
-    {code:'BILL',name:'Bill.com',mkt:105},
-    {code:'ZS',name:'Zscaler',mkt:105},
-    {code:'APP',name:'AppLovin',mkt:105},
-    {code:'ESTC',name:'Elastic',mkt:105},
-    // === 半导体扩展 ===
-    {code:'TSM',name:'台积电',mkt:106},
-    {code:'ARM',name:'ARM',mkt:105},{code:'MPWR',name:'Monolithic Power',mkt:105},
-    {code:'ALAB',name:'Astera Labs',mkt:105},
-    // === 硬件 / 服务器 ===
-    {code:'DELL',name:'戴尔',mkt:106},
-    // === 金融科技 ===
-    {code:'HOOD',name:'Robinhood',mkt:105},
-    // === 游戏 / 元宇宙 ===
-    {code:'RBLX',name:'Roblox',mkt:105},
-    // === AI / 量子 / 太空热门科技 ===
-    {code:'RKLB',name:'Rocket Lab',mkt:105},
+    {code:'GOOGL',name:'谷歌A',mkt:105},{code:'AMZN',name:'亚马逊',mkt:105},
+    {code:'META',name:'Meta',mkt:105},{code:'NVDA',name:'英伟达',mkt:105},
+    // === 半导体 ===
+    {code:'AVGO',name:'博通',mkt:105},{code:'CSCO',name:'思科',mkt:105},
+    {code:'ADBE',name:'Adobe',mkt:105},{code:'QCOM',name:'高通',mkt:105},
+    {code:'TXN',name:'德州仪器',mkt:105},{code:'INTC',name:'英特尔',mkt:105},
+    {code:'AMAT',name:'应用材料',mkt:105},{code:'ADI',name:'亚德诺',mkt:105},
+    {code:'LRCX',name:'泛林集团',mkt:105},{code:'MU',name:'美光科技',mkt:105},
+    {code:'NXPI',name:'恩智浦',mkt:105},
+    // === 软件 / 互联网 / 服务 ===
+    {code:'INTU',name:'财捷',mkt:105},{code:'NFLX',name:'奈飞',mkt:105},
+    {code:'ADP',name:'自动数据处理',mkt:105},{code:'PANW',name:'Palo Alto',mkt:105},
+    {code:'BKNG',name:'Booking',mkt:105},{code:'CTSH',name:'高知特',mkt:105},
 ];
 
 // ===== 游戏状态 =====
@@ -412,7 +374,7 @@ async function newGame() {
         const total = result.klines.length;
         const historyCount = Math.min(HISTORY_DAYS, total - TRADING_DAYS);
         const totalNeeded = historyCount + TRADING_DAYS;
-        // 在近3年数据范围内随机选择起始位置
+        // 在全部数据范围内（近10年）随机选择起始位置
         const maxStart = Math.max(0, total - totalNeeded);
         const startIdx = maxStart > 0 ? Math.floor(Math.random() * (maxStart + 1)) : 0;
 

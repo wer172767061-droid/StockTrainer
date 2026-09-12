@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """
 富途 OpenD 批量下载科技类美股K线数据
-仅下载纳斯达克100 + 标普500科技股 + 热门科技股
-排除中概股、医疗健康股
-仅下载近3年K线数据
+24只核心科技股，近10年日K（富途单次上限1000条，自动分页）
 
 用法: python3 download.py
 前提: 富途牛牛客户端已启动 OpenD（默认端口 11111）
@@ -16,70 +14,43 @@ from futu import OpenQuoteContext, KLType, AuType, RET_OK
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stock_data')
 
-# ===== 近3年日期范围 =====
+# ===== 近10年日期范围 =====
 now = datetime.now()
-START_DATE = (now - timedelta(days=365 * 3)).strftime('%Y-%m-%d')
+START_DATE = (now - timedelta(days=365 * 10)).strftime('%Y-%m-%d')
 END_DATE = now.strftime('%Y-%m-%d')
 
 # ===== 富途 OpenD 连接参数 =====
 FUTU_HOST = '127.0.0.1'
 FUTU_PORT = 11111
 
-# ===== 科技股池 =====
-# 纳斯达克100 + 标普500科技 + 热门科技股
-# 已排除: 中概股、医疗健康、保险、传统金融、能源、材料、消费、工业、公用事业、REITs
+# ===== 23只核心科技股 =====
+# 注: EA 已于2025年被私有化收购退市，富途已无此股票，故移除
 TECH_STOCKS = [
-    # === NASDAQ 100 核心科技巨头 ===
-    "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "META", "NVDA", "AMD", "INTC", "AVGO",
-    "ADBE", "CSCO", "QCOM", "TXN", "ORCL", "CRM", "NOW", "INTU", "MU", "AMAT",
-    "ADI", "LRCX", "NXPI", "MCHP", "MRVL", "KLAC", "ANET", "ON",
-
-    # === S&P 500 信息技术 ===
-    "IBM", "ACN", "CTSH", "IT", "KEYS", "TER", "STX", "WDC", "NTAP",
-    "HPQ", "HPE", "FFIV",
-    "PANW", "FTNT", "SNPS", "CDNS", "WDAY",
-
-    # === 网络平台 / 互联网科技 ===
-    "TSLA", "NFLX", "UBER", "ABNB", "SHOP", "PYPL", "DASH", "ROKU",
-    "SPOT",
-
-    # === 云计算 / SaaS ===
-    "SNOW", "DDOG", "TEAM", "MDB", "OKTA", "CRWD", "PLTR", "NET",
-    "GTLB", "BILL", "ZS", "APP",
-    "ESTC",
-
-    # === 半导体扩展 ===
-    "TSM", "ARM", "MPWR", "ALAB",
-
-    # === 硬件 / 服务器 ===
-    "DELL",
-
-    # === 金融科技（非传统金融）===
-    "HOOD",
-
-    # === 游戏 / 元宇宙 ===
-    "RBLX",
-
-    # === AI / 量子 / 太空热门科技 ===
-    "RKLB",
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA",
+    "AVGO", "CSCO", "ADBE", "QCOM", "TXN", "INTC",
+    "AMAT", "ADI", "LRCX", "MU", "INTU", "NFLX",
+    "ADP", "PANW", "NXPI", "BKNG", "CTSH",
 ]
 
-# 去重
+# 去重（保持顺序）
 seen = set()
 TECH_STOCKS = [s for s in TECH_STOCKS if not (s in seen or seen.add(s))]
 TECH_SET = set(TECH_STOCKS)
 print(f"共 {len(TECH_STOCKS)} 只科技类美股")
 print(f"数据源: 富途 OpenD ({FUTU_HOST}:{FUTU_PORT})")
-print(f"数据范围: {START_DATE} ~ {END_DATE}")
+print(f"数据范围: {START_DATE} ~ {END_DATE} (近10年)")
 print()
 
 # ===== 清理不在新列表中的旧数据文件 =====
 if os.path.exists(OUTPUT_DIR):
     removed = 0
     for f in os.listdir(OUTPUT_DIR):
-        if f.endswith('.json') and f != '_index.json':
+        if f.endswith('.json'):
             code = f.replace('.json', '')
-            if code not in TECH_SET:
+            if code.startswith('_'):
+                os.remove(os.path.join(OUTPUT_DIR, f))
+                removed += 1
+            elif code not in TECH_SET:
                 os.remove(os.path.join(OUTPUT_DIR, f))
                 removed += 1
     if removed > 0:
@@ -91,6 +62,44 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"正在连接富途 OpenD ({FUTU_HOST}:{FUTU_PORT})...")
 quote_ctx = OpenQuoteContext(host=FUTU_HOST, port=FUTU_PORT)
 print("连接成功！\n")
+
+
+def fetch_all_klines(quote_ctx, futu_code):
+    """
+    分页拉取近10年日K。
+    富途 request_history_kline 单次最多返回1000条（从start往后数），
+    所以不断把start游标往后挪，直到取完或到达END_DATE。
+    """
+    all_rows = []
+    start_cursor = START_DATE
+    for _ in range(10):  # 最多10页保险
+        ret, data, _ = quote_ctx.request_history_kline(
+            futu_code,
+            start=start_cursor,
+            end=END_DATE,
+            ktype=KLType.K_DAY,
+            autype=AuType.QFQ,
+            max_count=1000
+        )
+        if ret != RET_OK:
+            raise RuntimeError(str(data)[:80])
+        if data is None or data.empty:
+            break
+        all_rows.append(data)
+        if len(data) < 1000:
+            break
+        # 本页最晚日期，游标后移1天继续往后翻
+        latest = str(data.iloc[-1]['time_key'])[:10]
+        start_cursor = (datetime.strptime(latest, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
+        if start_cursor > END_DATE:
+            break
+        time.sleep(0.3)
+    if not all_rows:
+        return []
+    import pandas as pd
+    df = pd.concat(all_rows, ignore_index=True)
+    return df.to_dict('records')
+
 
 success, skip, fail = 0, 0, 0
 index = {}
@@ -104,7 +113,7 @@ for i, code in enumerate(TECH_STOCKS):
         try:
             with open(fp) as f:
                 d = json.load(f)
-            if d.get("downloaded_date", "") == END_DATE and d.get("count", 0) > 100:
+            if d.get("downloaded_date", "") == END_DATE and d.get("count", 0) > 2000:
                 skip += 1
                 index[code] = {
                     "name": d.get("name", ""),
@@ -118,30 +127,17 @@ for i, code in enumerate(TECH_STOCKS):
     try:
         futu_code = f"US.{code}"
 
-        # ===== 1. 下载近3年K线数据 =====
-        ret, kline_data, _ = quote_ctx.request_history_kline(
-            futu_code,
-            start=START_DATE,
-            end=END_DATE,
-            ktype=KLType.K_DAY,
-            autype=AuType.QFQ,
-            max_count=1000
-        )
+        # ===== 1. 分页下载近10年K线数据 =====
+        rows = fetch_all_klines(quote_ctx, futu_code)
 
-        if ret != RET_OK:
+        if len(rows) < 50:
             fail += 1
-            print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ❌ {code:6s} K线获取失败: {str(kline_data)[:50]}")
-            time.sleep(0.5)
-            continue
-
-        if kline_data is None or kline_data.empty:
-            fail += 1
-            print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ❌ {code:6s} 无K线数据")
+            print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ⚠️ {code:6s} 数据不足({len(rows)}天), 跳过")
             time.sleep(0.5)
             continue
 
         klines = []
-        for _, row in kline_data.iterrows():
+        for row in rows:
             klines.append({
                 "t": str(row['time_key'])[:10],
                 "o": round(float(row['open']), 2),
@@ -150,21 +146,17 @@ for i, code in enumerate(TECH_STOCKS):
                 "c": round(float(row['close']), 2),
                 "v": int(row['volume'])
             })
-        klines.sort(key=lambda x: x['t'])
-
-        if len(klines) < 50:
-            fail += 1
-            print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ⚠️ {code:6s} 数据不足({len(klines)}天), 跳过")
-            time.sleep(0.5)
-            continue
+        # 去重 + 排序
+        uniq = {k['t']: k for k in klines}
+        klines = sorted(uniq.values(), key=lambda x: x['t'])
 
         # ===== 2. 获取股票名称 =====
         name = code
         try:
             ret2, snap = quote_ctx.get_market_snapshot([futu_code])
             if ret2 == RET_OK and not snap.empty:
-                row = snap.iloc[0]
-                name = str(row.get('name', '') or row.get('stock_name', '') or code)
+                srow = snap.iloc[0]
+                name = str(srow.get('name', '') or srow.get('stock_name', '') or code)
         except:
             pass
 
@@ -186,12 +178,12 @@ for i, code in enumerate(TECH_STOCKS):
             "name": name,
             "days": len(klines)
         }
-        print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ✅ {code:6s} {name:16s} {len(klines):4d}天")
+        print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ✅ {code:6s} {name:16s} {len(klines):4d}天 ({klines[0]['t']} ~ {klines[-1]['t']})")
 
     except Exception as e:
         fail += 1
         print(f"[{i+1:3d}/{len(TECH_STOCKS)}] ❌ {code:6s} {str(e)[:60]}")
-    
+
     time.sleep(0.3)
 
 # 保存索引
@@ -207,6 +199,7 @@ print("=" * 70)
 print(f"✅ 完成！成功:{success} 跳过:{skip} 失败:{fail}")
 print(f"📁 {OUTPUT_DIR}/ ({total_mb:.1f} MB)")
 print(f"📊 股票数: {len(index)}")
-print(f"\n下一步: 启动后端服务:")
+print(f"\n下一步: 重建财报数据库:")
+print(f"  python3 fetch_earnings.py")
 print(f"  python3 server_backend.py")
 print(f"  浏览器打开 http://localhost:8765")
