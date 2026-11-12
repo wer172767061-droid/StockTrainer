@@ -42,11 +42,16 @@ print(f"数据范围: {START_DATE} ~ {END_DATE} (近10年)")
 print()
 
 # ===== 清理不在新列表中的旧数据文件 =====
+# 注: QQQ 由 fetch_qqq.py 单独维护（全历史），不能被这里的清理逻辑删掉
+KEEP_EXTRA = {"QQQ"}
 if os.path.exists(OUTPUT_DIR):
     removed = 0
     for f in os.listdir(OUTPUT_DIR):
         if f.endswith('.json'):
             code = f.replace('.json', '')
+            if code in KEEP_EXTRA:
+                print(f"🛡️  保留 {code}.json（由 fetch_qqq.py 维护）")
+                continue
             if code.startswith('_'):
                 os.remove(os.path.join(OUTPUT_DIR, f))
                 removed += 1
@@ -187,6 +192,16 @@ for i, code in enumerate(TECH_STOCKS):
     time.sleep(0.3)
 
 # 保存索引
+# 注: 把 fetch_qqq.py 维护的标的（QQQ）重新并回索引，避免被本次全量覆写冲掉
+for extra in KEEP_EXTRA:
+    extra_fp = os.path.join(OUTPUT_DIR, f"{extra}.json")
+    if os.path.exists(extra_fp):
+        try:
+            with open(extra_fp) as f:
+                d = json.load(f)
+            index[extra] = {"name": d.get("name", extra), "days": d.get("count", 0)}
+        except Exception:
+            pass
 with open(os.path.join(OUTPUT_DIR, '_index.json'), 'w') as f:
     json.dump(index, f, ensure_ascii=False, indent=2)
 

@@ -26,6 +26,39 @@ const US_STOCKS = [
 
 // ===== 游戏状态 =====
 const INITIAL_CAPITAL = 100000;
+
+// ===== 纳指100 专练 =====
+// 非空时 newGame() 只从该标的里选题，跳过随机股池
+const NASDAQ_CODE = 'QQQ';
+let lockedCode = null;
+
+function updateNasdaqButton() {
+    const btn = document.getElementById('nasdaqBtn');
+    if (!btn) return;
+    const on = lockedCode === NASDAQ_CODE;
+    btn.classList.toggle('active', on);
+    btn.querySelector('.nasdaq-text').textContent = on ? '纳指100 训练中' : '纳指100训练';
+    btn.title = on ? '点击退出，回到随机训练' : '只训练纳斯达克100（QQQ）';
+}
+
+/** 顶栏按钮：未激活则进入纳指100专练，已激活则退出回到随机 */
+function toggleNasdaqTraining() {
+    if (lockedCode === NASDAQ_CODE) {
+        lockedCode = null;
+        updateNasdaqButton();
+        newGame();
+    } else {
+        startNasdaqTraining();
+    }
+}
+
+/** 只训练纳斯达克100（QQQ），点击即开一局 */
+function startNasdaqTraining() {
+    lockedCode = NASDAQ_CODE;
+    updateNasdaqButton();
+    newGame();
+}
+
 const state = {
     historyKlines: [],
     tradingKlines: [],
@@ -329,6 +362,12 @@ window.addEventListener('DOMContentLoaded', () => {
     updateCumulativeUI();
     initDrawOverlay();
     initSlPanelDrag();
+    // 深链：?mode=nasdaq 或 ?stock=QQQ 直接进入纳指100训练
+    const params = new URLSearchParams(location.search);
+    if (params.get('mode') === 'nasdaq' || (params.get('stock') || '').toUpperCase() === NASDAQ_CODE) {
+        lockedCode = NASDAQ_CODE;
+    }
+    updateNasdaqButton();
     newGame();
 });
 
@@ -350,6 +389,19 @@ async function newGame() {
         showLoading(false);
         alert('无法连接后端数据服务，请确保后端已启动。');
         return;
+    }
+
+    // 纳指100 专练：锁定单一标的，未就绪则自动退出，避免卡在无数据状态
+    if (lockedCode) {
+        const only = stockList.filter(s => s.code === lockedCode);
+        if (only.length === 0) {
+            showLoading(false);
+            showToast(`${lockedCode} 数据未就绪，已退出纳指100专练`, 'error');
+            lockedCode = null;
+            updateNasdaqButton();
+            return;
+        }
+        stockList = only;
     }
 
     // 随机打乱
@@ -459,7 +511,7 @@ function updateStockHeader() {
         nameEl.textContent = '???';
         codeEl.textContent = '???';
     }
-    dsEl.textContent = '富途牛牛 · 近3年数据';
+    dsEl.textContent = lockedCode === NASDAQ_CODE ? '纳指100ETF · 全历史' : '富途牛牛 · 近3年数据';
     dsEl.className = 'data-badge real';
 }
 
@@ -1445,11 +1497,13 @@ function endGame(reason) {
     document.getElementById('resultStock').innerHTML = `交易股票: <strong>${state.stockName} (${state.stockCode})</strong><br>时间: ${firstDate} ~ ${lastDate} · ${dsLabel}`;
 
     const btnArea = document.getElementById('resultButtons');
+    const qqqBtn = `<button class="btn-restart btn-nasdaq" onclick="startNasdaqTraining()">📊 纳斯达克100训练（QQQ）</button>`;
     if (cumulative.cash <= 0) {
-        btnArea.innerHTML = `<button class="btn-restart" onclick="newGame()">资金归零，重新开始（$100,000）</button>`;
+        btnArea.innerHTML = `<button class="btn-restart" onclick="newGame()">资金归零，重新开始（$100,000）</button>${qqqBtn}`;
     } else {
         btnArea.innerHTML = `
             <button class="btn-restart" onclick="newGame()">再来一局（带入 $${cumulative.cash.toLocaleString('en-US',{minimumFractionDigits:0})}）</button>
+            ${qqqBtn}
         `;
     }
 

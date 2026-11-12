@@ -1,5 +1,7 @@
-stock_data/
 __pycache__/
 .DS_Store
 *.pyc
 StockTrainer_export.zip
+
+# 注: stock_data/ 必须提交。Render 上没有 OpenD，数据只能随仓库一起上线，
+#     所以这里不再忽略它，否则线上会是空数据。

@@ -90,5 +90,9 @@
   "CTSH": {
     "name": "高知特",
     "days": 2512
+  },
+  "QQQ": {
+    "name": "纳指100ETF-Invesco QQQ Trust",
+    "days": 5040
   }
 }

@@ -1,0 +1,4 @@
+# 本地拉数据才需要（Render 上不装，省构建时间）
+# 用法: python -m pip install -r requirements-dev.txt
+-r requirements.txt
+moomoo-api>=10.0.0

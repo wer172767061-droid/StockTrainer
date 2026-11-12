@@ -1,0 +1,13 @@
+# Render Blueprint：把 Stock Trainer 作为 Python Web Service 部署
+# 在 Render 控制台 New + Blueprint，选中本仓库即可自动读取
+services:
+  - type: web
+    name: stock-trainer
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server_backend:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
